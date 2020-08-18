@@ -1,0 +1,28 @@
+# add required libraries for OpenSceneGraph and osgEarth
+ifeq ($(WITH_OSG),yes)
+OMNETPP_LIBS += $(filter-out $(USERIF_LIBS),$(OSG_LIBS) -losgAnimation)
+endif
+ifeq ($(WITH_OSGEARTH),yes)
+OMNETPP_LIBS += $(filter-out $(USERIF_LIBS),$(OSGEARTH_LIBS) -losgEarthFeatures -losgEarthSymbology -losgEarthAnnotation)
+endif
+
+#ifeq ($(OS),Windows_NT)
+#LIBS += -lWS2_32
+#endif
+
+#
+# on windows we have to link with the ws2_32 (winsock2) library as it is no longer added
+# to the omnetpp system libraries by default (as of OMNeT++ 5.1)
+#
+ifeq ($(PLATFORM),win32.x86_64)
+  LIBS += -lws2_32
+  DEFINES += -DESTNET_EXPORT
+  ENABLE_AUTO_IMPORT=-Wl,--enable-auto-import
+  LDFLAGS := $(filter-out $(ENABLE_AUTO_IMPORT), $(LDFLAGS))
+endif
+
+# message compiler
+MSGC:=$(MSGC) --msg6
+
+#add include path for deps
+INCLUDE_PATH += -Iestnet/common/

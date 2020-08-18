@@ -1,0 +1,39 @@
+//
+// Copyright (C) 2020 Computer Science VII: Robotics and Telematics - 
+// Julius-Maximilians-Universitaet Wuerzburg
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see http://www.gnu.org/licenses/.
+//
+
+package estnet.mac.csmaca;
+
+import inet.linklayer.contract.IMacProtocol;
+import inet.linklayer.csmaca.CsmaCaMac;
+
+//
+// An ~CsmaCaMacQueue with additional statistics being collected
+//
+module CsmaCaMacExtraStatistics extends CsmaCaMac like IMacProtocol
+{
+    parameters:
+        // Signal dropPkNotForUs does not exist anymore in INET4, maybe use unsigned long numDroppedNotForUs in EtherMacBase.h instead
+        //@signal[dropPkNotForUs](type=inet::AckingMacHeader);
+        @signal[linkBroken](type=inet::Packet);
+        @statistic[passedUpPk](title="packets passed to higher layer"; source=packetSentToUpper; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @statistic[sentDownPk](title="packets sent to lower layer"; source=packetSentToLower; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @statistic[rcvdPkFromHL](title="packets received from higher layer"; source=packetReceivedFromUpper; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @statistic[rcvdPkFromLL](title="packets received from lower layer"; source=packetReceivedFromLower; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        //@statistic[droppedPkNotForUs](title="packets dropped/not for us"; source=dropPkNotForUs; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @statistic[lostPkNoReceiver](title="packets lost/no receiver"; source=linkBroken; record=count,"sum(packetBytes)","vector(packetBytes)","vector(macFrameSrcNodeNo)","vector(macFrameDestNodeNo)"; interpolationmode=none);
+}

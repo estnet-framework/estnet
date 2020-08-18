@@ -1,0 +1,38 @@
+#!/bin/bash
+###########################################################################
+# By Holger Doebler <holger.doebler@informatik.hu-berlin.de>              #
+# This script simply calls opp_makemake to generate Makefiles for ESTNeT. #
+# This job is normally done by the omnet++ IDE, so it is only useful in a #
+# headless environment.                                                   #
+# INET4 is assumed to be installed in ../../inet4 or, if set,             #
+# in $INET4_PROJ                                                          #
+###########################################################################
+
+if [ $# -gt 0 ]; then
+    echo 'Usage: ./makemake
+Call `opp_makemake` in order to create a `Makefile` to build ESTNeT.
+INET4 is assumed to be installed in ../../inet4 or, if set, in $INET4_PROJ
+'
+    exit 1
+fi
+
+# set INET4_PROJ environment variable
+if [ -z $INET4_PROJ ]
+then
+    INET4_PROJ=../../inet4
+    echo "\$INET4_PROJ is not set, assuming $INET4_PROJ"
+fi
+
+# check whether $INET4_PROJ really is an INET 4 project directory
+if grep -qs 'inet-4' $INET4_PROJ/Version
+then
+  echo -n 'INFO: compiling against ' && cat $INET4_PROJ/Version
+else
+  echo "ERROR: $INET4_PROJ does not seem to be an INET 4 project directory"
+  exit 1
+fi
+
+# Actually call opp_makemake.
+# The following line is generated from the IDE-built Makefile using
+# egrep '#  opp_makemake' Makefile | sed -e 's/#  //' -e 's/\$\$/\\$/g' -e 's/-KINET4_PROJ\=\S\+/-KINET4_PROJ=$INET4_PROJ/'
+opp_makemake --make-so -f --deep -o ESTNeT -O out -pESTNET -KINET4_PROJ=$INET4_PROJ -DINET_IMPORT -I. -I\$\(INET4_PROJ\)/src -L\$\(INET4_PROJ\)/src -lINET\$\(D\) -d estnet/contactplan/tool
