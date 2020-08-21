@@ -22,7 +22,6 @@
 #include <inet/common/ProtocolTag_m.h>
 #include <inet/linklayer/common/MacAddressTag_m.h>
 #include <inet/common/packet/tag/TagSet.h>
-//#include <inet/common/ModuleAccess.h>
 
 #include "estnet/mobility/satellite/common/EulerAngleHelpers.h"
 #include "estnet/common/StlUtils.h"
@@ -42,10 +41,6 @@ void RadioHost::initialize(int stage) {
     if (stage == 0) {
         this->_nodeRegistry = NodeRegistry::getInstance();
         this->_nodeNo = this->par("nodeNo");
-        //this->_queueModule = getModuleFromPar<inet::queueing::IPacketQueue>(
-        //par("queueModule"), inet::getContainingNode(this));
-        //if (!this->_queueModule)
-        //    throw omnetpp::cRuntimeError("Missing queueModule");
 
         _lastSendTime = -1;
         _msgSameTime = 0;
@@ -178,43 +173,55 @@ void RadioHost::sendToGroundStation(GroundStation *otherGs, inet::Packet *pkt) {
 }
 
 int RadioHost::chooseRadio(unsigned int destNodeId) {
+    // get access to target node and its position
     int bestGateIdx = -1;
     double bestGateMetric = std::numeric_limits<double>::infinity();
     NodeBase *destinationNode = this->_nodeRegistry->getNode(destNodeId);
     inet::IMobility *destMobility = destinationNode->getMobility();
     inet::Coord destPosition = destMobility->getCurrentPosition();
 
-    for (const auto &connectedRadioEntry : this->_connectedRadios) {
-        int currentGateIdx = connectedRadioEntry.first;
-        inet::physicallayer::IRadio *currentRadio = connectedRadioEntry.second;
-        inet::IMobility *antennaMobility =
-                currentRadio->getAntenna()->getMobility();
-        inet::Coord antennaPosition = antennaMobility->getCurrentPosition();
-        inet::Quaternion antennaOrientation =
-                antennaMobility->getCurrentAngularPosition();
+    // if the node has multiple radios find the one with smallest antenna pointing error
+    if (this->_connectedRadios.size() > 1) {
+        for (const auto &connectedRadioEntry : this->_connectedRadios) {
+            int currentGateIdx = connectedRadioEntry.first;
+            inet::physicallayer::IRadio *currentRadio =
+                    connectedRadioEntry.second;
+            inet::IMobility *antennaMobility =
+                    currentRadio->getAntenna()->getMobility();
+            inet::Coord antennaPosition = antennaMobility->getCurrentPosition();
+            inet::Quaternion antennaOrientation =
+                    antennaMobility->getCurrentAngularPosition();
 
-        inet::Quaternion antennaOrientationConj = antennaOrientation;
-        antennaOrientationConj.conjugate();
+            inet::Quaternion antennaOrientationConj = antennaOrientation;
+            antennaOrientationConj.conjugate();
 
-        inet::Coord connectingVector = antennaPosition - destPosition;
-        connectingVector.normalize();
-        antennaOrientationConj.rotate(connectingVector);
+            inet::Coord connectingVector = antennaPosition - destPosition;
+            connectingVector.normalize();
+            antennaOrientationConj.rotate(connectingVector);
 
-        //Assumption: Antenna is pointing in X_AXIS for RPY=(0,0,0)
-        inet::Quaternion orientation = inet::Quaternion::rotationFromTo(
-                inet::Coord::X_AXIS, connectingVector);
-        orientation.normalize();
-        double totalAngles = acos(
-                inet::Coord::X_AXIS * orientation.rotate(inet::Coord::X_AXIS));
+            //Assumption: Antenna is pointing in X_AXIS for RPY=(0,0,0)
+            inet::Quaternion orientation = inet::Quaternion::rotationFromTo(
+                    inet::Coord::X_AXIS, connectingVector);
+            orientation.normalize();
+            double product = std::min(1.0f,
+                    std::max(-1.0f,
+                            orientation.rotate(inet::Coord::X_AXIS)
+                                    * inet::Coord::X_AXIS));
+            double totalAngles = acos(product);
 
-        EV_TRACE << "Radio " << currentGateIdx << " angle: " << totalAngles
-                        << omnetpp::endl;
+            EV_TRACE << "Radio " << currentGateIdx << " angle: " << totalAngles
+                            << omnetpp::endl;
 
-        if (totalAngles < bestGateMetric) {
-            bestGateIdx = currentGateIdx;
-            bestGateMetric = totalAngles;
+            if (totalAngles < bestGateMetric) {
+                bestGateIdx = currentGateIdx;
+                bestGateMetric = totalAngles;
+            }
         }
+    } else if (this->_connectedRadios.size() == 1) {
+        auto it = this->_connectedRadios.begin();
+        bestGateIdx = it->first;
     }
+
     if (bestGateIdx == -1) {
         throw omnetpp::cRuntimeError("Could not choose radio");
     }
