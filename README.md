@@ -8,9 +8,12 @@ Further information on ESTNeT can be found in the following paper: https://doi.o
 
 If you use ESTNeT for publications please cite this paper.
 
+![A System Overview should be shown here.](./figures/estnet_diagram.png?raw=true "System overview")
+
 
 # Getting started
 
 Guidelines for the installation of ESTNeT can be found in the file **[INSTALL.md](INSTALL.md)**
 
 A template project is provided [here](https://github.com/estnet-framework/estnet-template) to simplify the use of ESTNeT as a library.
+
