@@ -17,3 +17,10 @@ Guidelines for the installation of ESTNeT can be found in the file **[INSTALL.md
 
 A template project is provided [here](https://github.com/estnet-framework/estnet-template) to simplify the use of ESTNeT as a library.
 
+# User guidelines:
+- [Running a simulation from the command line](Running-a-simulation-from-the-command-line)
+- [Creating a contact plan](creating-a-contact-plan)
+- [ini file options](ini-file-options) 
+- [Creating earth map for offline use](Creating-earth-map-for-offline-use)
+- [Publisher Subscriber](pub-sub)
+- [Submitting Code](Submitting-Code)
