@@ -8,6 +8,6 @@
 - `<object-full-path>.cmdenv-log-level` restricts output on a per-component basis
 - Further information: https://doc.omnetpp.org/omnetpp/manual/#sec:config-sim:configuring-cmdenv
 
-[**3D Visualization**](3dvis)
+[**3D Visualization**](3dvis.md)
 
-[**Tracking and Attitude Control**](Tracking-and-Attitude-Control)
+[**Tracking and Attitude Control**](Tracking-and-Attitude-Control.md)
