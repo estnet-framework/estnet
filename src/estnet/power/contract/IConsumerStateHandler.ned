@@ -18,7 +18,9 @@
 
 package estnet.power.contract;
 
+//
 // interface for new consumer state handler
+//
 moduleinterface IConsumerStateHandler
 {
 }

@@ -167,14 +167,6 @@ void ProtocolModuleBase::waitForProtocolResponse(
         emit(bufferLength, (unsigned long int) this->_bufferedTimeouts.size());
         emit(bufferingTime, timeout - omnetpp::simTime());
 
-        /*inet::Packet *appPkt = dynamic_cast<inet::Packet*>(message);
-         auto numHop = appPkt->findTag<NumHopsTag>();
-         if (numHop != nullptr) {
-         emit(bufferedFrame, appPkt);
-         } else {
-         emit(bufferedPk, appPkt);
-         }* TODO*/
-
         return;
     }
     inet::Packet *appPkt = dynamic_cast<inet::Packet*>(message);

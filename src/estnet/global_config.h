@@ -24,15 +24,19 @@
  */
 
 #include <cmath>
+
 #include <inet/common/Units.h>
+#include <inet/physicallayer/contract/packetlevel/IRadioMedium.h>
+
 #include "estnet/common/ESTNETDefs.h"
+
 
 namespace estnet {
 
 // namespace shortcuts
 namespace inetu = inet::units::values;
-
-// global typedefs
+namespace inetp = inet::physicallayer;
+        // global typedefs
 typedef std::tuple<unsigned int, unsigned int> AppAddress;
 typedef std::tuple<AppAddress, long> SequenceNumber;
 

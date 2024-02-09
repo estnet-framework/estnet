@@ -75,11 +75,11 @@ protected:
 
 public:
     virtual ~AttitudeController();
-    /** @brief Changes the target at which the satellite is pointing to */
+    /** @brief Changes the target which the satellite is pointing to */
     virtual void changeTarget(AttitudeTarget &newTarget,
             double targetUpdateTime = 60.0, inet::Coord pointingAxis =
                     inet::Coord(1, 0, 0));
-    /** @brief gets the current target at which the satellite is pointing to */
+    /** @brief gets the current target which the satellite is pointing to */
     virtual void getCurrentTarget(AttitudeTarget &currentTarget);
     /** @brief Returns the power consumption in the range [0, +infinity) */
     virtual inet::power::W getPowerConsumption() const;

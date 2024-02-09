@@ -36,6 +36,9 @@
 
 namespace estnet {
 
+/**
+ * Interface for attitude state vectors
+ */
 class ESTNET_API PropStateAttitude: public PropState {
     template<typename tAttitudeState> friend class AttitudePropagator;
 

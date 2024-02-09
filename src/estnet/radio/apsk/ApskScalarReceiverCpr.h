@@ -20,6 +20,7 @@
 #define __ESTNET_APSKSCALARRECEIVERCPR_H_
 
 #include <inet/physicallayer/apskradio/packetlevel/ApskScalarReceiver.h>
+
 #include "estnet/common/ESTNETDefs.h"
 
 using namespace omnetpp;
@@ -32,6 +33,10 @@ namespace estnet {
  */
 class ESTNET_API ApskScalarReceiverCpr: public inet::physicallayer::ApskScalarReceiver {
 protected:
+    /**
+     * overrides the initialize function in order to check for the correct
+     * SNIR threshold
+     */
     virtual void initialize(int stage) override;
 };
 

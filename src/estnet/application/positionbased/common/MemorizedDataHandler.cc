@@ -154,8 +154,20 @@ MemorizedDataHandler::MemorizedDataHandler(SatMobility *satMobility,
 
 void MemorizedDataHandler::getDataForPoint(double latitude, double longitude,
         double &multiplier) {
-    // TODO implement same functionality for single point
-    multiplier = -1;
+    if (numberOfMsgToSend == 0) {
+        if (satMobility != nullptr) {
+            messageToSendMap.clear();
+            inet::Coord coord = this->satMobility->getCurrentPosition();
+            inet::Coord vel = this->satMobility->getCurrentVelocity();
+            setDataForPointInAcquaintedShip(coord, vel, latitude, longitude);
+
+            numberOfMsgToSend = this->messageToSendMap.size();
+        }
+    } else {
+        multiplier = this->messageToSendMap.size()
+                / calcIdleInterval(latitude, longitude, 0, 0);
+        numberOfMsgToSend--;
+    }
 }
 
 void MemorizedDataHandler::getDataForCone(double latitude, double longitude,
@@ -376,6 +388,63 @@ void MemorizedDataHandler::setDataForConeInAcquaintedShip(inet::Coord coord,
                                         keyForMap, SIMTIME_ZERO));
                     }
                 }
+            }
+        }
+    }
+}
+
+void MemorizedDataHandler::setDataForPointInAcquaintedShip(inet::Coord coord,
+        inet::Coord speedCoord, double latitude, double longitude) {
+    inet::Coord coordShip, vectorSatShip, coordSat, coorNadirSat;
+
+    earthModel->convertLatLongHeightToECEF(
+            inetu::deg(inet::math::deg2rad(latitude)),
+            inetu::deg(inet::math::deg2rad(longitude)), inetu::m(10),
+            coorNadirSat);
+    earthModel->convertLatLongHeightToECEF(
+            inetu::deg(inet::math::deg2rad(latitude)),
+            inetu::deg(inet::math::deg2rad(longitude)), inetu::m(10),
+            coordShip);
+    double cellNumber, value, numMessagesRemainder = 0;
+    cellNumber = getCellNumber(latitude, longitude, resolution);
+
+    // Continue with the next dataset, if no data exists in the current cell
+    // or the data points are more then radiusFootprint away from NadirPoint
+    if (cellNumber >= dataSet.size()
+            || coorNadirSat.distance(coordShip) > resolution) {
+        return;
+    }
+    value = calculateNumOfMessagesToSend(dataSet.at(cellNumber),
+            &numMessagesRemainder);
+
+    std::string keyForMap;
+    int total = 0;
+
+    for (int count = 0; count < value; count++) {
+        keyForMap = "";
+        keyForMap.append(std::to_string(cellNumber));
+        keyForMap.append("_");
+        keyForMap.append(std::to_string(count));
+
+        // Value SIMTIME_ZERO means we have to send a message for this ship.
+        // Logic: Add message to map if: it is unknown or the current time is greater then last hit time + duration of sight
+
+        if (acquaintedShipMap.find(keyForMap) == acquaintedShipMap.end()) {
+            acquaintedShipMap.insert(
+                    std::pair<std::string, double>(keyForMap,
+                            omnetpp::simTime().dbl()));
+        }
+
+        if (acquaintedShipMap.find(keyForMap)->second
+                <= omnetpp::simTime().dbl()) {
+            totalDetected++;
+            total++;
+            acquaintedShipMap.find(keyForMap)->second = omnetpp::simTime().dbl();
+
+            if (isShipDetected()) {
+                messageToSendMap.insert(
+                        std::pair<std::string, omnetpp::simtime_t>(keyForMap,
+                                SIMTIME_ZERO));
             }
         }
     }

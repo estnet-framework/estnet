@@ -34,5 +34,6 @@ module IdealMacExtraStatistics extends AckingMac like IMacProtocol
         @statistic[rcvdPkFromHL](title="packets received from higher layer"; source=packetReceivedFromUpper; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @statistic[rcvdPkFromLL](title="packets received from lower layer"; source=packetReceivedFromLower; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         //@statistic[droppedPkNotForUs](title="packets dropped/not for us"; source=dropPkNotForUs; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @statistic[lostPkNoReceiver](title="packets lost/no receiver"; source=linkBroken; record=count,"sum(packetBytes)","vector(packetBytes)","vector(macFrameSrcNodeNo)","vector(macFrameDestNodeNo)"; interpolationmode=none);
+        @statistic[lostPkNoReceiver](title="packets lost/no receiver"; source=linkBroken; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @statistic[packetDropIncorrectlyReceivedButForUs](title="packet drop: incorrectly received but for us"; source=packetDroppedDueToBitErrorOrCollision(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
 }

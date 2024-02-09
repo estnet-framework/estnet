@@ -25,6 +25,7 @@
 #include <set>
 #include <vector>
 #include <algorithm>
+
 #include "estnet/common/ESTNETDefs.h"
 
 namespace estnet {
@@ -34,7 +35,6 @@ using TimeRange = std::tuple<int64_t, int64_t>;
 /**
  * Represents one contact plan entry
  */
-// TODO make data holding class
 typedef struct contact_plan_entry {
     unsigned int sourceNodeId;
     unsigned int sinkNodeId;
@@ -87,9 +87,7 @@ struct timerange_comp {
 
 // convenience names for commonly used types
 using ContactPlan = std::vector<contact_plan_entry_t *>;
-// TODO use instead of vector everywhere
 using InterferencePlan = std::vector<interference_plan_entry_t *>;
-// TODO use instead of vector everywhere
 
 /**
  * comparator struct that sorts contacts using the source and sink node id
@@ -125,9 +123,6 @@ struct independentset_comp {
                 auto b = std::tie(r->sourceNodeId, r->sinkNodeId);
                 return a < b;
             };
-            /*
-             std::set<contact_plan_entry_t *, decltype(cmp)> a_cp(a.begin(),a.end(),cmp);
-             std::set<contact_plan_entry_t *, decltype(cmp)> b_cp(b.begin(),b.end(),cmp);*/
 
             auto l = a.begin();
             auto r = b.begin();

@@ -20,12 +20,12 @@
 #define __CONTACTPLANS_MANAGER_H__
 
 #include "Contacts.h"
-#include "../common/Semaphore.h"
 
 #include <algorithm> // push_heap, pop_heap
 #include <vector> // vector
 
 #include "../iterator/ContactPlanIterator.h"
+#include "Semaphore.h"
 
 namespace estnet {
 

@@ -26,22 +26,36 @@ namespace estnet {
 
 Define_Module(SatMobility)
 
+omnetpp::simsignal_t SatMobility::positionUpdateX =
+  registerSignal("positionUpdateX");
+omnetpp::simsignal_t SatMobility::positionUpdateY =
+  registerSignal("positionUpdateY");
+omnetpp::simsignal_t SatMobility::positionUpdateZ =
+  registerSignal("positionUpdateZ");
+
+omnetpp::simsignal_t SatMobility::velocityUpdateX =
+  registerSignal("velocityUpdateX");
+omnetpp::simsignal_t SatMobility::velocityUpdateY =
+  registerSignal("velocityUpdateY");
+omnetpp::simsignal_t SatMobility::velocityUpdateZ =
+  registerSignal("velocityUpdateZ");
+
 SatMobility::SatMobility() :
-        _iAttitudePropagator(nullptr), _iPositionPropagator(nullptr), _doAutoUpdate(
-                false), _selfUpdateIV_s(0.0) {
+        _iAttitudePropagator(nullptr), _iPositionPropagator(nullptr) {
     this->_jdGlobal = GlobalJulianDate::getInstancePtr();
 
 }
 
 void SatMobility::initialize(int stage) {
+    IExtendedMobility::initialize(stage);
     // get parameters
-
-    _doAutoUpdate = par("enableSelfTrigger");
-    _selfUpdateIV_s = par("selfTriggerTimeIv");
-    extUpdtSignalNamePrefix = par("extUpdtSignalNamePrefix").stringValue();
-
-    if (stage == inet::INITSTAGE_LOCAL) {
-
+    if(stage == 1){
+        _doAutoUpdate = par("enableSelfTrigger");
+        _selfUpdateIV_s = par("selfTriggerTimeIv");
+        extUpdtSignalNamePrefix = par("extUpdtSignalNamePrefix").stringValue();
+        _maximumVelocity = estimateMaximumVelocity();
+    }
+     if (stage == inet::INITSTAGE_LOCAL) {
         // get attitude and position propagators
 
         // get the attitude propagator
@@ -128,7 +142,7 @@ void SatMobility::initialize(int stage) {
     }
 }
 
-int SatMobility::getOrbitalPeriod() {
+int SatMobility::getOrbitalPeriod() const {
     int orbitalPeriod = 0;
     IPositionPropagator *pBase =
             dynamic_cast<IPositionPropagator*>(_iPositionPropagator);
@@ -186,9 +200,26 @@ cQuaternion const &newAngularVel, cQuaternion const &newAngularAcc,
             newAngularAcc, attitudeTimeStamp);
 }
 
+double SatMobility::estimateMaximumVelocity(){
+    double T = this->getOrbitalPeriod();
+    double time = 0;
+    double maxVelocity;
+
+    while (time <= T) {
+        inet::Coord tempVel = this->getVelocityAtTime(time);
+        double tempVelAbs = tempVel.length();
+        if (tempVelAbs > maxVelocity){
+            maxVelocity = tempVelAbs;
+        }
+
+        time += T / 100;
+    }
+    return maxVelocity;
+}
+
+
 double SatMobility::getMaxSpeed() const {
-    // TODO: Max speed calculation...
-    return 0.0;
+    return _maximumVelocity;
 }
 
 inet::Coord SatMobility::getCurrentPositionWithoutSignal() {
@@ -208,6 +239,11 @@ inet::Coord SatMobility::getCurrentPosition() {
     // position (potentially) changed, we're emitting
     // a signal to let our listeners know
     emit(mobilityStateChangedSignal, this);
+
+    emit(positionUpdateX, rtn.x);
+    emit(positionUpdateY, rtn.y);
+    emit(positionUpdateZ, rtn.z);
+
     return rtn;
 }
 
@@ -223,6 +259,10 @@ inet::Coord SatMobility::getPositionAtTime(double time) {
 inet::Coord SatMobility::getCurrentVelocity() {
     cEci acEci;
     _iPositionPropagator->getECIAtTime(_jdGlobal->currentSimTime(), acEci);
+
+    emit(velocityUpdateX, acEci.getVel().x);
+    emit(velocityUpdateY, acEci.getVel().y);
+    emit(velocityUpdateZ, acEci.getVel().z);
     return acEci.getVel();
 }
 
@@ -236,8 +276,10 @@ inet::Coord SatMobility::getVelocityAtTime(double time) {
 }
 
 inet::Coord SatMobility::getCurrentAcceleration() {
-    // TODO
-    return inet::Coord();
+    double v = this->getCurrentVelocity().length();
+    inet::Coord r = this->getCurrentPosition();
+    double omega = v/r.length();
+    return r * ((float)-pow(omega, 2));
 }
 
 inet::Quaternion SatMobility::getCurrentAngularPosition() {
@@ -288,13 +330,15 @@ inet::Quaternion SatMobility::getCurrentAngularAcceleration() {
 }
 
 inet::Coord SatMobility::getConstraintAreaMax() const {
-    // TODO: return true constraint area max
-    return inet::Coord();
+    // Using a multiple of the semi major axis as upper bound
+    double T = this->getOrbitalPeriod();
+    double a = cbrt(pow(T / (2.0 * M_PI), 2) * GM);
+    return inet::Coord(a, a, a) * 10.0;
 }
 
 inet::Coord SatMobility::getConstraintAreaMin() const {
-    // TODO: return true constraint area min
-    return inet::Coord();
+    // using the Earth's radius as minumum area
+    return inet::Coord(WGS_84_RADIUS_POLAR, WGS_84_RADIUS_POLAR, WGS_84_RADIUS_POLAR);
 }
 
 }  // namespace estnet

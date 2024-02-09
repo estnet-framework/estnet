@@ -31,16 +31,12 @@ namespace estnet {
  * APSKScalarReceiver with support for GMSK modulation
  */
 class ESTNET_API APSKScalarReceiverWithGMSK: public inet::physicallayer::ApskScalarReceiver {
+    /**
+     * Overides initialization of ApskScalatReceiver, as it does not allow
+     * other modulations
+     */
     virtual void initialize(int stage) override;
 
-    virtual bool computeIsReceptionPossible(
-            const inet::physicallayer::IListening *listening,
-            const inet::physicallayer::ITransmission *transmission) const
-                    override;
-    virtual bool computeIsReceptionPossible(
-            const inet::physicallayer::IListening *listening,
-            const inet::physicallayer::IReception *reception,
-            inet::physicallayer::IRadioSignal::SignalPart part) const override;
 
 private:
     static omnetpp::simsignal_t noisePower;

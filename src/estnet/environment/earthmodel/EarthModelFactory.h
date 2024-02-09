@@ -25,6 +25,12 @@
 
 namespace estnet {
 
+
+/**
+ * Factory for creating earth model objects
+ * Available objects are Sphere Earth model and
+ * WGS84 based Earth model
+ */
 class ESTNET_API EarthModelFactory {
 public:
     /**

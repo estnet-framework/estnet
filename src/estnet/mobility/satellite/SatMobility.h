@@ -32,7 +32,7 @@
 
 namespace estnet {
 
-class ESTNET_API SatMobility: public omnetpp::cModule, public IExtendedMobility {
+class ESTNET_API SatMobility: public IExtendedMobility {
 public:
     SatMobility();
     virtual ~SatMobility() = default;
@@ -66,7 +66,7 @@ public:
      * Returns the orbital period of the current orbit
      *@return orbital period in seconds
      */
-    virtual int getOrbitalPeriod();
+    virtual int getOrbitalPeriod() const;
 
     /**
      * Returns the current distance to the center of earth.
@@ -158,19 +158,31 @@ protected:
     virtual void initialize(int stage) override;
 
 private:
+    /*
+    *   @brief Iterates through one orbit and extract maximum velocity
+    *   @return double: maximum velocity of satellite
+    */
+    double estimateMaximumVelocity();
+
     IAttitudePropagator *_iAttitudePropagator; ///< pointer to the attitude propagator
     IPositionPropagator *_iPositionPropagator; ///< pointer to the position propagator
-    bool _doAutoUpdate; ///< true, if the position and attitude should be updated
-                        /// in regular intervals (self-triggered)
-    double _selfUpdateIV_s; ///< if self-triggered updates are enabled, this
-                            /// defines the time interval between two successive
-    /// updates
+
     std::string extUpdtSignalNamePrefix; ///< name prefix for the signal used to
                                          /// perform an external position/attitude
     /// update in this satmobility module
     inet::EulerAngles _coordinateFrame;
 
     std::map<int64_t, cQuaternion> _cachedAngularPositions;
+
+    /// signals for statistics
+    static omnetpp::simsignal_t positionUpdateX;
+    static omnetpp::simsignal_t positionUpdateY;
+    static omnetpp::simsignal_t positionUpdateZ;
+    static omnetpp::simsignal_t velocityUpdateX;
+    static omnetpp::simsignal_t velocityUpdateY;
+    static omnetpp::simsignal_t velocityUpdateZ;
+
+    double _maximumVelocity; ///< stores the maximum velocity that is calculated in the beginnings
 };
 
 }  // namespace estnet

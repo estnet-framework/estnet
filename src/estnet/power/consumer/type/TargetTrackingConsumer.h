@@ -63,15 +63,15 @@ public:
     virtual ~TargetTrackingConsumer();
 
 private:
-    W _consumption;         ///< power consumption in state on
-    W _offConsumption;    ///< power consumption in state off
-    cMessage *_changeStatus; ///< update message
-    IEarthModel *_earthModel; ///< earth model used for long/lat calculations
-    inet::deg _latitude;       ///< latitude of observed point
-    inet::deg _longitude;      ///< longitude of observed point
-    inet::deg _minElevation; ///< min. elevation to have to be able to observe the point
-    AttitudeTarget _target; ///< target for attitude pointing when passing the target area
-
+    W _consumption;             ///< power consumption in state on
+    W _offConsumption;           ///< power consumption in state off
+    cMessage *_changeStatus;    ///< update message
+    IEarthModel *_earthModel;   ///< earth model used for long/lat calculations
+    inet::deg _latitude;        ///< latitude of observed point
+    inet::deg _longitude;       ///< longitude of observed point
+    inet::deg _minElevation;    ///< min. elevation to have to be able to observe the point
+    AttitudeTarget _target;     ///< target for attitude pointing when passing the target area
+    AttitudeTarget _lastTarget; ///< target for attitude pointing when leaving the target area
     /* @brief sends current target to attitude controller */
     void updateTracking();
 };

@@ -22,7 +22,7 @@ import inet.node.inet.INetworkNode;
 
 //
 // Extension to ~INetworkNode in order to give each node
-// an unique identifier
+// a unique identifier
 //
 moduleinterface INetworkNodeNumbered extends INetworkNode
 {

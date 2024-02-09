@@ -20,6 +20,7 @@ package estnet.power.base;
 
 import inet.power.base.EpEnergyGeneratorBase;
 import estnet.power.contract.ISolarPanel;
+import estnet.mobility.base.OffsetMobility;
 
 //
 // Basic model of solar panel for satellites
@@ -31,13 +32,13 @@ import estnet.power.contract.ISolarPanel;
 // The orientation is modeled by an offset to the satellite frame
 // with yaw-pitch-roll angles.d
 //
-simple SatelliteSolarPanelBase extends EpEnergyGeneratorBase like ISolarPanel
+module SatelliteSolarPanelBase extends EpEnergyGeneratorBase like ISolarPanel
 {
     parameters:
         string energySinkModule = default("^.battery"); // module path of energy sink
         int checkInterval @unit(s) = default(10s); // interval at which energy production will be calculated
-        double cellSize;  // cell size in m^2
-        double sunIntensity = default(1367); // @unit(W/m2)
+        double cellSize @unit(sqrm);  // cell size in m^2
+        double sunIntensity @unit(Wpsqrm) = default(1367Wpsqrm); // @unit(W/m2)
         double efficiency;	// power retrieve efficiency of solar cells
         double systemLosses = default(0.9); // losses by transfering energy to the battery
         double absoluteSystemLoss = default(0); // absolute system loss in Watt
@@ -50,4 +51,12 @@ simple SatelliteSolarPanelBase extends EpEnergyGeneratorBase like ISolarPanel
         @class(SatelliteSolarPanelBase);
 
 
+ 	submodules:
+ 	    mobility : OffsetMobility {
+ 	        parameters:
+ 	            yaw = yaw;
+ 	            pitch = pitch;
+ 	            roll = roll;
+ 	            parentMobility = default("^.^.^.networkHost.mobility");
+ 	    }
 }

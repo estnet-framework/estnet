@@ -23,6 +23,10 @@ import inet.linklayer.common.MacAddress;
 
 namespace estnet;
 
+//
+// This header holds node information like the
+// node ID of the source and destination node.
+//
 class AppHostHeader extends inet::FieldsChunk
 {
 	chunkLength = inet::B(16);

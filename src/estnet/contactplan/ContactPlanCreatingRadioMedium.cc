@@ -16,10 +16,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#include "inet/common/packet/chunk/BitCountChunk.h"
-#include "inet/common/ProtocolTag_m.h"
+#include <inet/common/packet/chunk/BitCountChunk.h>
+#include <inet/common/ProtocolTag_m.h>
 #include <inet/physicallayer/common/packetlevel/Interference.h>
 #include <inet/physicallayer/base/packetlevel/PropagationBase.h>
+
 #include "../node/groundstation/GroundStation.h"
 #include "ContactPlanCreatingRadioMedium.h"
 #include "writer/ContactPlanWriter.h"
@@ -47,6 +48,9 @@ void ContactPlanCreatingRadioMedium::initialize(int stage) {
                 "assumeBidirectionalSatContacts");
         this->_considerAddedInterferences = par("considerAddedInterferences");
         this->_buildInterferencePlan = par("buildInterferencePlan");
+        this->_checkISL = par("checkISL");
+        this->_checkDownlinks = par("checkDownlinks");
+        this->_checkUplinks = par("checkUplinks");
 
         if (this->_assumeBidirectionalSatContacts) {
             std::cout << "Assuming bidirectional satellite contacts"
@@ -87,14 +91,14 @@ void ContactPlanCreatingRadioMedium::initialize(int stage) {
                     radio->getParentModule()->getParentModule()->getParentModule()->getClassName(),
                     "estnet::Satellite") == 0) {
                 const unsigned int islRadius =
-                        this->_kdTreeAdapter->computeCommRadius(iRadio, iRadio);
+                        this->_kdTreeAdapter->computeCommRadius(iRadio, iRadio, this);
                 this->_satRadiosRadius->insert(
                         std::pair<const inetp::IRadio*, unsigned int>(iRadio,
                                 islRadius));
             } else {
                 unsigned int gsSatRadius =
                         this->_kdTreeAdapter->computeCommRadius(iRadio,
-                                satRadioForCalc);
+                                satRadioForCalc, this);
                 this->_gsRadiosRadius->insert(
                         std::make_pair(iRadio, gsSatRadius));
             }
@@ -254,17 +258,23 @@ void ContactPlanCreatingRadioMedium::finish() {
             (int64_t) simtime_limit.get());
 
     std::cout << "Max sim-time: " << (int64_t) simtime_limit.get() << std::endl;
+    std::cout << std::endl;
+    std::cout << "Full contact plan written to " << fullContactPlan
+            << std::endl;
 
     // write out full interference plan
-    //interference_map_inner_inner<interference_plan_entry_t> invertedInterferences = this->invertInterferenceMap(this->_interferences);
-    InterferencePlan interferences;
-    for (interference_map_entry<interference_plan_entry_t> &interferencesEntry : this->_interferences) {
-        InterferencePlan interferencesTmp =
-                this->getVectorOfInterferingContacts(interferencesEntry.second);
-        interferences.insert(interferences.end(), interferencesTmp.begin(),
-                interferencesTmp.end());
+    if(_buildInterferencePlan){
+        InterferencePlan interferences;
+        for (interference_map_entry<interference_plan_entry_t> &interferencesEntry : this->_interferences) {
+            InterferencePlan interferencesTmp =
+                    this->getVectorOfInterferingContacts(interferencesEntry.second);
+            interferences.insert(interferences.end(), interferencesTmp.begin(),
+                    interferencesTmp.end());
+        }
+        InterferencePlanWriter().write(interferences, fullInterferencePlan);
+        std::cout << "Full interference plan written to " << fullInterferencePlan
+                << std::endl;
     }
-    InterferencePlanWriter().write(interferences, fullInterferencePlan);
     cancelAndDelete(this->_checkTimer);
 
     delete this->_gsRadiosRadius;
@@ -272,11 +282,6 @@ void ContactPlanCreatingRadioMedium::finish() {
     delete this->_radiosInterferenceRadius;
     delete this->_kdTreeAdapter;
 
-    std::cout << std::endl;
-    std::cout << "Full contact plan written to " << fullContactPlan
-            << std::endl;
-    std::cout << "Full interference plan written to " << fullInterferencePlan
-            << std::endl;
 }
 
 template<typename T>
@@ -358,69 +363,73 @@ void ContactPlanCreatingRadioMedium::handleMessage(cMessage *message) {
         std::vector<std::pair<const inetp::Radio*, const inetp::Radio*>> contactsPossible =
                 std::vector<std::pair<const inetp::Radio*, const inetp::Radio*>>();
 
-        radius_map::iterator it;
-        for (it = this->_satRadiosRadius->begin();
-                it != this->_satRadiosRadius->end(); it++) {
-            const inetp::IRadio *iTransmitter = it->first;
-            const inetp::Radio *transmitter =
-                    check_and_cast<const inetp::Radio*>(iTransmitter);
-            unsigned int transmitterNodeId =
-                    transmitter->getParentModule()->getParentModule()->par(
-                            "nodeNo");
-            //searching for all satellites that are in the range radius and check them
-            std::vector<std::pair<long long, long long> > radiusSearchResult;
 
-            this->_kdTreeAdapter->unsortedRadiusSearch<int>(transmitterNodeId,
-                    radiusSearchResult, (long long) it->second);
-            for (const std::pair<long long, long long> ID_Radius : radiusSearchResult) {
-                unsigned int receiverNodeId = ID_Radius.first + 1;
+        // check satellite contacts
+        if(_checkISL){
+            radius_map::iterator it;
+            for (it = this->_satRadiosRadius->begin();
+                    it != this->_satRadiosRadius->end(); it++) {
+                const inetp::IRadio *iTransmitter = it->first;
+                const inetp::Radio *transmitter =
+                        check_and_cast<const inetp::Radio*>(iTransmitter);
+                unsigned int transmitterNodeId =
+                        transmitter->getParentModule()->getParentModule()->par(
+                                "nodeNo");
+                //searching for all satellites that are in the range radius and check them
+                std::vector<std::pair<long long, long long> > radiusSearchResult;
 
-                //get first radio of satellite with id
-                const NodeRegistry *nodeRegistry = NodeRegistry::getInstance();
-                auto networkHost =
-                        nodeRegistry->getNode(receiverNodeId)->getSubmodule(
-                                "networkHost");
-                const IRadio *iReceiver = check_and_cast<const inetp::IRadio*>(
-                        networkHost->getSubmodule("wlan", 0)->getSubmodule(
-                                "radio"));
-                const inetp::Radio *receiver = check_and_cast<
-                        const inetp::Radio*>(iReceiver);
+                this->_kdTreeAdapter->unsortedRadiusSearch<int>(transmitterNodeId,
+                        radiusSearchResult, (long long) it->second);
+                for (const std::pair<long long, long long> ID_Radius : radiusSearchResult) {
+                    // match Id, as node id starts at 1
+                    unsigned int receiverNodeId = ID_Radius.first + 1;
 
-                if (iReceiver == iTransmitter) {
-                    // receiver and transmitter need to be different
-                    continue;
-                }
-                if (0
-                        != strcmp(
-                                receiver->getParentModule()->getParentModule()->getParentModule()->getClassName(),
-                                "estnet::Satellite")) {
-                    //sat to gs connections will be checked later
-                    continue;
-                }
-                if (this->isBidirectionalContact(transmitterNodeId,
-                        receiverNodeId) && transmitterNodeId > receiverNodeId) {
-                    // if we assume all satellite contacts are birectional
-                    // we can skip the reversed order checks.
-                    // sat-to-ground or ground-to-sat contacts are usually very
-                    // different, so we'll keep doing directional checks there
-                    contactsPossible.push_back(
-                            std::pair<const inetp::Radio*, const inetp::Radio*>(
-                                    transmitter, receiver));
-                    continue;
-                }
-                // check if contact possible without interference
-                bool isWorkingContact = this->checkAndAddWorkingContacts(
-                        transmitter, receiver);
-                // check who can interfer with the contact, if the contact is possible
-                if (isWorkingContact && this->_buildInterferencePlan) {
-                    contactsPossible.push_back(
-                            std::pair<const inetp::Radio*, const inetp::Radio*>(
-                                    transmitter, receiver));
-                    //this->checkAndAddInterferingContacts(transmitter, receiver);
+                    //get first radio of satellite with id
+                    const NodeRegistry *nodeRegistry = NodeRegistry::getInstance();
+                    auto networkHost =
+                            nodeRegistry->getNode(receiverNodeId)->getSubmodule(
+                                    "networkHost");
+                    const IRadio *iReceiver = check_and_cast<const inetp::IRadio*>(
+                            networkHost->getSubmodule("wlan", 0)->getSubmodule(
+                                    "radio"));
+                    const inetp::Radio *receiver = check_and_cast<
+                            const inetp::Radio*>(iReceiver);
+
+                    if (iReceiver == iTransmitter) {
+                        // receiver and transmitter need to be different
+                        continue;
+                    }
+                    if (0
+                            != strcmp(
+                                    receiver->getParentModule()->getParentModule()->getParentModule()->getClassName(),
+                                    "estnet::Satellite")) {
+                        //sat to gs connections will be checked later
+                        continue;
+                    }
+                    if (this->isBidirectionalContact(transmitterNodeId,
+                            receiverNodeId) && transmitterNodeId > receiverNodeId) {
+                        // if we assume all satellite contacts are birectional
+                        // we can skip the reversed order checks.
+                        // sat-to-ground or ground-to-sat contacts are usually very
+                        // different, so we'll keep doing directional checks there
+                        contactsPossible.push_back(
+                                std::pair<const inetp::Radio*, const inetp::Radio*>(
+                                        transmitter, receiver));
+                        continue;
+                    }
+                    // check if contact possible without interference
+                    bool isWorkingContact = this->checkAndAddWorkingContacts(
+                            transmitter, receiver);
+                    // check who can interfer with the contact, if the contact is possible
+                    if (isWorkingContact && this->_buildInterferencePlan) {
+                        contactsPossible.push_back(
+                                std::pair<const inetp::Radio*, const inetp::Radio*>(
+                                        transmitter, receiver));
+                    }
                 }
             }
         }
-
+        radius_map::iterator it;
         for (it = this->_gsRadiosRadius->begin();
                 it != this->_gsRadiosRadius->end(); it++) {
             const inetp::IRadio *iTransmitter = it->first;
@@ -429,7 +438,7 @@ void ContactPlanCreatingRadioMedium::handleMessage(cMessage *message) {
             unsigned int transmitterNodeId =
                     transmitter->getParentModule()->getParentModule()->par(
                             "nodeNo");
-            //searching for all satellites that are in the range radius and check them
+            //searching for all nodes that are in the range radius and check them
             std::vector<std::pair<long long, long long> > radiusSearchResult;
             this->_kdTreeAdapter->unsortedRadiusSearch<int>(transmitterNodeId,
                     radiusSearchResult, (long long) it->second);
@@ -451,24 +460,39 @@ void ContactPlanCreatingRadioMedium::handleMessage(cMessage *message) {
                     // receiver and transmitter need to be different
                     continue;
                 }
-                // check if contact possible without interference
-                bool isWorkingContact = this->checkAndAddWorkingContacts(
-                        transmitter, receiver);
-                // check who can interfere with the contact, if the contact is possible
-                if (isWorkingContact && this->_buildInterferencePlan) {
-                    contactsPossible.push_back(
-                            std::pair<const inetp::Radio*, const inetp::Radio*>(
-                                    transmitter, receiver));
-                    //this->checkAndAddInterferingContacts(transmitter, receiver);
+
+                // check for gs to gs contact
+                if (0 != strcmp(receiver->getParentModule()->getParentModule()->getParentModule()->getClassName(),
+                                "estnet::Satellite")) {
+                    // check if contact gs to gs is possible, no interference check necessary
+                    bool isWorkingContact = this->checkAndAddWorkingContacts(
+                            transmitter, receiver);
+                    bool isWorkingContactOther = this->checkAndAddWorkingContacts(
+                            receiver, transmitter);
+                    continue;
                 }
-                bool isWorkingContactOther = this->checkAndAddWorkingContacts(
-                        receiver, transmitter);
-                // check who can interfere with the contact, if the contact is possible
-                if (isWorkingContactOther && this->_buildInterferencePlan) {
-                    contactsPossible.push_back(
-                            std::pair<const inetp::Radio*, const inetp::Radio*>(
-                                    receiver, transmitter));
-                    //this->checkAndAddInterferingContacts(transmitter, receiver);
+
+                // check if contact gs to sat is possible without interference
+                if(_checkUplinks){
+                    bool isWorkingContact = this->checkAndAddWorkingContacts(
+                            transmitter, receiver);
+                    // check who can interfere with the contact, if the contact is possible
+                    if (isWorkingContact && this->_buildInterferencePlan) {
+                        contactsPossible.push_back(
+                                std::pair<const inetp::Radio*, const inetp::Radio*>(
+                                        transmitter, receiver));
+                    }
+                }
+                if(_checkDownlinks){
+                    // check if contact sat to gs is possible without interference
+                    bool isWorkingContactOther = this->checkAndAddWorkingContacts(
+                            receiver, transmitter);
+                    // check who can interfere with the contact, if the contact is possible
+                    if (isWorkingContactOther && this->_buildInterferencePlan) {
+                        contactsPossible.push_back(
+                                std::pair<const inetp::Radio*, const inetp::Radio*>(
+                                        receiver, transmitter));
+                    }
                 }
             }
         }
@@ -631,7 +655,7 @@ void ContactPlanCreatingRadioMedium::addContact(
 
 bool ContactPlanCreatingRadioMedium::isWorkingContact(
         const inetp::Radio *transmitter, const inetp::Radio *receiver,
-        int64_t &bitrate, int64_t &range) const {
+        int64_t &bitrate, int64_t &range) {
     long transmitterNodeId =
             transmitter->getParentModule()->getParentModule()->par("nodeNo");
     long receiverNodeId = receiver->getParentModule()->getParentModule()->par(
@@ -723,12 +747,36 @@ void ContactPlanCreatingRadioMedium::addInterferenceEntry(
         this->addInterferenceEntry(interferences,
                 newInterferencePlanEntryReversed);
     }
+
+
+}
+
+
+const IArrival *ContactPlanCreatingRadioMedium::getArrival(const IRadio *receiver, const ITransmission *transmission) const
+{
+    return this->propagation->computeArrival(transmission,
+                            receiver->getAntenna()->getMobility());
+}
+
+
+const IReception *ContactPlanCreatingRadioMedium::getReception(const IRadio *receiver, const ITransmission *transmission) const
+{
+    const IReception *reception = computeReception(receiver, transmission);
+    return reception;
+}
+
+const IListening *ContactPlanCreatingRadioMedium::getListening(const IRadio *receiver, const ITransmission *transmission) const
+{
+    return receiver->getReceiver()->createListening(receiver,
+            transmission->getStartTime(), transmission->getEndTime(),
+            transmission->getStartPosition(),
+            transmission->getEndPosition());
 }
 
 const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmission(
         const inetp::Radio *transmitter, const inetp::Radio *receiver,
         const std::vector<inetp::Radio*> &interferences,
-        int64_t packetBitLength) const {
+        int64_t packetBitLength) {
 
     // create fake packet for transmission with same size
     inet::Packet *fakePacket = new inet::Packet("fakePacket");
@@ -742,7 +790,6 @@ const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmiss
 
     transmitter->encapsulate(fakePacket);
 
-    //fakePacket->setBitLength(packetBitLength);
     // create fake transmission
     const inetp::ITransmission *fakeTransmission =
             transmitter->getTransmitter()->createTransmission(transmitter,
@@ -750,31 +797,20 @@ const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmiss
     // create fake arrival
     const inetp::IArrival *fakeArrival = this->propagation->computeArrival(
             fakeTransmission, receiver->getAntenna()->getMobility());
-    const inetp::IListening *fakeListening =
-            receiver->getReceiver()->createListening(receiver,
-                    fakeArrival->getStartTime(), fakeArrival->getEndTime(),
-                    fakeArrival->getStartPosition(),
-                    fakeArrival->getEndPosition());
-    // create fake reception
-    const inetp::IReception *fakeReception =
-            this->analogModel->computeReception(receiver, fakeTransmission,
-                    fakeArrival);
-    const inetp::INoise *bNoise =
-            backgroundNoise ?
-                    backgroundNoise->computeNoise(fakeListening) : nullptr;
+
 
     // build interfering receptions
     std::vector<const inetp::IReception*> interferingReceptionsTmp;
     for (const auto &interferingTransmitterRadio : interferences) {
         // calculate when interferring transmission needs to occur to arrive at the same time
         // assumes interferingTransmitterRadio and receiver use the same bitrate
-        omnetpp::simtime_t startArrivalTime = fakeReception->getStartTime();
+        omnetpp::simtime_t startArrivalTime = fakeArrival->getStartTime();
         inet::mps propagationSpeed = inet::mps(
                 omnetpp::check_and_cast<const inetp::PropagationBase*>(
                         this->propagation)->par("propagationSpeed"));
         const inet::Coord interferingTransmitterPos =
                 interferingTransmitterRadio->getAntenna()->getMobility()->getCurrentPosition();
-        const inet::Coord receiverPos = fakeReception->getStartPosition();
+        const inet::Coord receiverPos = fakeArrival->getStartPosition();
         omnetpp::simtime_t propagationTime = receiverPos.distance(
                 interferingTransmitterPos) / propagationSpeed.get();
         omnetpp::simtime_t transmitTime = startArrivalTime - propagationTime;
@@ -802,9 +838,11 @@ const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmiss
         const inetp::IReception *interferingReception =
                 this->analogModel->computeReception(receiver,
                         interferingTransmission, interferingArrival);
+        //this->addTransmission(interferingTransmitterRadio,interferingTransmission);
+
         EV_DEBUG
                         << "ContactPlanCreatingRadioMedium::doFakeTransmission receptionStartTime "
-                        << fakeReception->getStartTime()
+                        << fakeArrival->getStartTime()
                         << ", interferingReceptionStartTime "
                         << interferingReception->getStartTime()
                         << omnetpp::endl;
@@ -813,7 +851,28 @@ const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmiss
         // arrival is not needed anymore and will fall out of scope => freeing
         delete interferingArrival;
     }
+    // recreate fake arrival an transmittsion to have larger transmission id than interferences
+    // create fake transmission
+    auto fakeTransmission2 = transmitter->getTransmitter()->createTransmission(transmitter,
+                    fakePacket, omnetpp::simTime());
+    //this->addTransmission(transmitter,fakeTransmission2);
+    // create fake arrival
+    auto fakeArrival2 = this->propagation->computeArrival(
+            fakeTransmission2, receiver->getAntenna()->getMobility());
 
+    const inetp::IListening *fakeListening =
+             receiver->getReceiver()->createListening(receiver,
+                     fakeArrival->getStartTime(), fakeArrival->getEndTime(),
+                     fakeArrival->getStartPosition(),
+                     fakeArrival->getEndPosition());
+
+    // create fake reception
+    const inetp::IReception *fakeReception =
+            this->analogModel->computeReception(receiver, fakeTransmission2,
+                    fakeArrival2);
+    const inetp::INoise *bNoise =
+            backgroundNoise ?
+                    backgroundNoise->computeNoise(fakeListening) : nullptr;
     // check reception decision with interference
     inetp::IInterference *interferenceTmp = new inetp::Interference(bNoise,
             &interferingReceptionsTmp);
@@ -826,6 +885,8 @@ const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmiss
             receiver->getReceiver()->computeReceptionDecision(fakeListening,
                     fakeReception, inetp::IRadioSignal::SIGNAL_PART_WHOLE,
                     interferenceTmp, snirTmp);
+    //this->removeTransmission(fakeTransmission2);
+
 
     // free all our memory
     delete snirTmp;
@@ -833,6 +894,8 @@ const inetp::IReceptionDecision* ContactPlanCreatingRadioMedium::doFakeTransmiss
     for (const auto &interferingReception : interferingReceptionsTmp) {
         auto interferingTransmission = interferingReception->getTransmission();
         auto interferingPacket = interferingTransmission->getPacket();
+        //this->removeTransmission(interferingTransmission);
+
         delete interferingTransmission;
         delete interferingPacket;
         delete interferingReception;

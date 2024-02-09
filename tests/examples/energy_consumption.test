@@ -1,0 +1,46 @@
+%description:
+Test energy creation model example
+
+%extraargs: -c SimpleSystemModel
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/powermodel/omnetpp.ini
+
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.battery powerConsumption:mean 2.7839767309144
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.consumer[0].constantConsumers[0] powerConsumption:mean 0.46783625730994
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.consumer[0].NAV[0] powerConsumption:mean 0.09403276017573
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.consumer[0].IMA[0] powerConsumption:mean 0.71423001949318
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.consumer[0].HPCU[0] powerConsumption:mean 0.64888248017304
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.consumer[0].ADS[0] powerConsumption:mean 0.1562363620494
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.battery powerConsumption:mean 2.7620459254355
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.consumer[0].constantConsumers[0] powerConsumption:mean 0.46783625730994
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.consumer[0].NAV[0] powerConsumption:mean 0.09403276017573
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.consumer[0].IMA[0] powerConsumption:mean 0.71423001949318
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.consumer[0].HPCU[0] powerConsumption:mean 0.64446831364125
+
+%contains: results/SimpleSystemModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.consumer[0].ADS[0] powerConsumption:mean 0.1562363620494
+
+

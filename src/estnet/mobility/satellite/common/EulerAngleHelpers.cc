@@ -17,12 +17,12 @@
 //
 
 #include "EulerAngleHelpers.h"
-#include "estnet/common/matrix/Matrix.h"
+
 #include <cmath>
 
 namespace estnet {
 
-void getEulerAnglesFromMatrix(double R[3][3], double &yaw, double &pitch,
+void getEulerAnglesFromMatrix(M4x4d& R, double &yaw, double &pitch,
         double &roll) {
     // figure out the euler angles that lead to this rotation matrix
     // HPR/YPR/ZXY rotation order leads to the following rotation matrix:
@@ -31,39 +31,26 @@ void getEulerAnglesFromMatrix(double R[3][3], double &yaw, double &pitch,
     // -Cp * Sr                     Sp          Cp * Cr
     // https://www.geometrictools.com/Documentation/EulerAngles.pdf
 
-    /*for (int i = 0; i < 3; i++) {
-     for(int j =0; j < 3; j++) {
-     if (fabs(R[i][j]) < 1e-3) {
-     R[i][j] = 0;
-     }
-     }
-     }*/
-
-    //if (std::fabs(R[2][1]) < 0.99999) {
-    if (R[2][1] < 1) {
-        if (R[2][1] > -1) {
-            yaw = atan2(-R[0][1], R[1][1]);
-            pitch = asin(R[2][1]);
-            roll = atan2(-R[2][0], R[2][2]);
+    if (R(2,1) < 1) {
+        if (R(2,1) > -1) {
+            yaw = atan2(-R(0,1), R(1,1));
+            pitch = asin(R(2,1));
+            roll = atan2(-R(2,0), R(2,2));
         } else {
-            yaw = -atan2(R[0][2], R[0][0]);
+            yaw = -atan2(R(0,2), R(0,0));
             pitch = -M_PI / 2.0;
             roll = 0;
         }
     } else {
-        yaw = atan2(R[0][2], R[0][0]);
+        yaw = atan2(R(0,2), R(0,0));
         pitch = M_PI / 2.0;
         roll = 0;
     }
-    /*} else {
-     yaw   =  atan2( R[1][0], R[0][0]);
-     pitch =  asin(  R[2][1]);
-     roll  =  0;
-     }*/
 }
 
+
 void getMatrixFromEulerAngles(double yaw, double pitch, double roll,
-        double matrix[3][3]) {
+        M4x4d& matrix) {
     // around z-axis (yaw/heading)
     //  Ch  -Sh    0
     //  Sh   Ch    0
@@ -98,88 +85,23 @@ void getMatrixFromEulerAngles(double yaw, double pitch, double roll,
     rotationR(2, 0) = -sr;
     rotationR(2, 2) = cr;
 
-    /*for (int i = 0; i < 3; i++) {
-     for(int j =0; j < 3; j++) {
-     if (fabs(rotationH(i, j)) < 1e-3) {
-     rotationH(i, j) = 0;
-     }
-     }
-     }
-     for (int i = 0; i < 3; i++) {
-     for(int j =0; j < 3; j++) {
-     if (fabs(rotationP(i, j)) < 1e-3) {
-     rotationP(i, j) = 0;
-     }
-     }
-     }
-     for (int i = 0; i < 3; i++) {
-     for(int j =0; j < 3; j++) {
-     if (fabs(rotationR(i, j)) < 1e-3) {
-     rotationR(i, j) = 0;
-     }
-     }
-     }*/
-
     // using osg conventions for rotation order and axises
-    M4x4d combined = rotationH * rotationP * rotationR;
+    matrix = rotationH * rotationP * rotationR;
 
-    /*for (int i = 0; i < 3; i++) {
-     for(int j =0; j < 3; j++) {
-     if (fabs(combined(i, j)) < 1e-3) {
-     combined(i, j) = 0;
-     }
-     }
-     }*/
-
-    /*EV_TRACE << "rotationH " << yaw << omnetpp::endl;
-     EV_TRACE << rotationH << omnetpp::endl << omnetpp::endl;
-     EV_TRACE << "rotationP " << pitch << omnetpp::endl;
-     EV_TRACE << rotationP << omnetpp::endl << omnetpp::endl;
-     EV_TRACE << "rotationR " << roll << omnetpp::endl;
-     EV_TRACE << rotationR << omnetpp::endl << omnetpp::endl;
-     EV_TRACE << "rotation" << omnetpp::endl;
-     EV_TRACE << combined << omnetpp::endl << omnetpp::endl;*/
-
-    matrix[0][0] = combined(0, 0);
-    matrix[0][1] = combined(0, 1);
-    matrix[0][2] = combined(0, 2);
-    matrix[1][0] = combined(1, 0);
-    matrix[1][1] = combined(1, 1);
-    matrix[1][2] = combined(1, 2);
-    matrix[2][0] = combined(2, 0);
-    matrix[2][1] = combined(2, 1);
-    matrix[2][2] = combined(2, 2);
 }
 
 inet::EulerAngles combineEulerAngles(const inet::EulerAngles &rotEul1,
         const inet::EulerAngles &rotEul2) {
-    double rotMatPtr1[3][3], rotMatPtr2[3][3];
+    M4x4d rotMat1, rotMat2;
     getMatrixFromEulerAngles(rotEul1.alpha.get(), rotEul1.beta.get(),
-            rotEul1.gamma.get(), rotMatPtr1);
+            rotEul1.gamma.get(), rotMat1);
     getMatrixFromEulerAngles(rotEul2.alpha.get(), rotEul2.beta.get(),
-            rotEul2.gamma.get(), rotMatPtr2);
+            rotEul2.gamma.get(), rotMat2);
 
-    M4x4d rotMat1;
-    rotMat1 << rotMatPtr1[0][0], rotMatPtr1[0][1], rotMatPtr1[0][2], 0.0, rotMatPtr1[1][0], rotMatPtr1[1][1], rotMatPtr1[1][2], 0.0, rotMatPtr1[2][0], rotMatPtr1[2][1], rotMatPtr1[2][2], 0.0, 0.0, 0.0, 0.0, 1.0;
-    M4x4d rotMat2;
-    rotMat2 << rotMatPtr2[0][0], rotMatPtr2[0][1], rotMatPtr2[0][2], 0.0, rotMatPtr2[1][0], rotMatPtr2[1][1], rotMatPtr2[1][2], 0.0, rotMatPtr2[2][0], rotMatPtr2[2][1], rotMatPtr2[2][2], 0.0, 0.0, 0.0, 0.0, 1.0;
-
-    double combinedMatPtr[3][3];
     M4x4d combined = rotMat1 * rotMat2;
-    combinedMatPtr[0][0] = combined(0, 0);
-    combinedMatPtr[0][1] = combined(0, 1);
-    combinedMatPtr[0][2] = combined(0, 2);
-    combinedMatPtr[1][0] = combined(1, 0);
-    combinedMatPtr[1][1] = combined(1, 1);
-    combinedMatPtr[1][2] = combined(1, 2);
-    combinedMatPtr[2][0] = combined(2, 0);
-    combinedMatPtr[2][1] = combined(2, 1);
-    combinedMatPtr[2][2] = combined(2, 2);
-    //EV_TRACE << "combined rotation matrix" << endl;
-    //EV_TRACE << combined << endl << endl;
 
     inet::EulerAngles result;
-    getEulerAnglesFromMatrix(combinedMatPtr,
+    getEulerAnglesFromMatrix(combined,
             const_cast<double&>(result.alpha.get()),
             const_cast<double&>(result.beta.get()),
             const_cast<double&>(result.gamma.get()));
@@ -190,43 +112,16 @@ inet::EulerAngles angleBetweenPositions(const inet::Coord &posA,
         const inet::EulerAngles &attA, const inet::Coord &posB) {
     Eigen::Vector3d ourPositionECI_e(posA.x, posA.y, posA.z);
     Eigen::Vector3d targetPositionECI_e(posB.x, posB.y, posB.z);
-    double rotMatPtr1[3][3];
+    M4x4d ourOrientation_e;
     getMatrixFromEulerAngles(attA.alpha.get(), attA.beta.get(),
-            attA.gamma.get(), rotMatPtr1);
-    M3x3d ourOrientation_e;
-    ourOrientation_e << rotMatPtr1[0][0], rotMatPtr1[0][1], rotMatPtr1[0][2], rotMatPtr1[1][0], rotMatPtr1[1][1], rotMatPtr1[1][2], rotMatPtr1[2][0], rotMatPtr1[2][1], rotMatPtr1[2][2];
+            attA.gamma.get(), ourOrientation_e);
 
     Eigen::Vector3d transmissionDirection_e = targetPositionECI_e
             - ourPositionECI_e;
     transmissionDirection_e.normalize();
-    Eigen::Vector3d transmissionDirectionLocal_e = ourOrientation_e.transpose()
-            * transmissionDirection_e;
-    /*EV_TRACE << "angleBetweenPositions posA " << posA << endl;
-     EV_TRACE << "angleBetweenPositions posB " << posB << endl;
-     EV_TRACE << "angleBetweenPositions diff vector " << inet::Coord(transmissionDirection_e(0), transmissionDirection_e(1), transmissionDirection_e(2)) << endl;
-     EV_TRACE << "angleBetweenPositions rotated vector " << inet::Coord(transmissionDirectionLocal_e(0), transmissionDirectionLocal_e(1), transmissionDirectionLocal_e(2)) << endl;
-     EV_TRACE << "posA" << endl;
-     EV_TRACE << ourPositionECI_e << endl << endl;
-     EV_TRACE << "posB" << endl;
-     EV_TRACE << targetPositionECI_e << endl << endl;
-     EV_TRACE << "orientation matrix" << endl;
-     EV_TRACE << ourOrientation_e << endl << endl;
-     EV_TRACE << "vector" << endl;
-     EV_TRACE << transmissionDirection_e << endl << endl;/
-     EV_TRACE << "result" << endl;
-     EV_TRACE << transmissionDirectionLocal_e << endl << endl;*/
+    Eigen::Vector4d transmissionDirectionLocal_e = ourOrientation_e.transpose()
+            * transmissionDirection_e.homogeneous();
 
-    // if there are really small errors, we set them to zero, as atan2 tends
-    // to start rotating 180 deg otherwise
-    /*if (std::fabs(transmissionDirectionLocal_e(0)) < 1e-3) {
-     transmissionDirectionLocal_e(0) = 0;
-     }
-     if (std::fabs(transmissionDirectionLocal_e(1)) < 1e-3) {
-     transmissionDirectionLocal_e(1) = 0;
-     }
-     if (std::fabs(transmissionDirectionLocal_e(2)) < 1e-3) {
-     transmissionDirectionLocal_e(2) = 0;
-     }*/
     // around z-axis
     double yawErr = -atan2(transmissionDirectionLocal_e(1),
             transmissionDirectionLocal_e(0));

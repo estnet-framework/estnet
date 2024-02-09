@@ -28,8 +28,8 @@ simple ContactPlanVisualizer
         bool show = default(true);                            // whether to show the line of sights or not
         string satToSatColor = default("#00FF00BF");          // color of satellite to satellite line-of-sights
         string satToSatColorOnPlan = default("#FF00FABF");    // color of satellite to satellite line-of-sights that are in the current contact plan
-        double satToSatWidth = default(2);                    // width satellite to satellite line-of-sights
+        double satToSatWidth @unit(m) = default(2m);                    // width satellite to satellite line-of-sights
         string satToGroundColor = default("#FFBF00BF");       // color of satellite to ground station line-of-sights
         string satToGroundColorOnPlan = default("#FF7200BF"); // color of satellite to satellite line-of-sights that are in the current contact plan
-        double satToGroundWidth = default(2);                 // width of satellite to ground station line-of-sights
+        double satToGroundWidth @unit(m) = default(2m);                 // width of satellite to ground station line-of-sights
 }

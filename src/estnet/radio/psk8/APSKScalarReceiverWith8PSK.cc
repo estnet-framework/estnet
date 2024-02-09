@@ -24,7 +24,7 @@
 #include <inet/physicallayer/backgroundnoise/IsotropicScalarBackgroundNoise.h>
 #include <inet/physicallayer/analogmodel/packetlevel/ScalarNoise.h>
 
-#include "estnet/noise/DirectionalScalarBackgroundNoise.h"
+#include "estnet/physicallayer/noise/DirectionalScalarBackgroundNoise.h"
 #include "PSK8Modulation.h"
 
 namespace estnet {
@@ -66,20 +66,5 @@ void APSKScalarReceiverWith8PSK::initialize(int stage) {
     }
 }
 
-bool APSKScalarReceiverWith8PSK::computeIsReceptionPossible(
-        const inet::physicallayer::IListening *listening,
-        const inet::physicallayer::ITransmission *transmission) const {
-    return inet::physicallayer::ApskScalarReceiver::computeIsReceptionPossible(
-            listening, transmission);
-}
-
-bool APSKScalarReceiverWith8PSK::computeIsReceptionPossible(
-        const inet::physicallayer::IListening *listening,
-        const inet::physicallayer::IReception *reception,
-        inet::physicallayer::IRadioSignal::SignalPart part) const {
-
-    return inet::physicallayer::ApskScalarReceiver::computeIsReceptionPossible(
-            listening, reception, part);
-}
 
 }  // namespace estnet

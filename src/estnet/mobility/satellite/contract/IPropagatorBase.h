@@ -19,8 +19,9 @@
 #ifndef SATMOBILITY_PROPAGATORS_IPROPAGATORBASE_H_
 #define SATMOBILITY_PROPAGATORS_IPROPAGATORBASE_H_
 
-#include "estnet/mobility/satellite/propagator/PropState.h"
 #include <mutex>
+
+#include "estnet/mobility/satellite/propagator/PropState.h"
 #include "estnet/common/time/cJulian.h"
 
 namespace estnet {
@@ -134,7 +135,6 @@ void PropagatorBase<tState>::getState(cJulian const &targetTime,
         _lastUpdateTime = targetTime;
     }
 
-    // std::make_shared<tPropState>(<>_currentState);
     auto tmpState = new PropagatorBase<tState>::state_type();
     *tmpState = _currentState;
     tPropState_Ptr nState = tPropState_Ptr(dynamic_cast<PropState*>(tmpState));

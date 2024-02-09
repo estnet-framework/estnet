@@ -25,12 +25,26 @@
 namespace estnet {
 
 /**
- * TODO - Generated class
+ * The Target tracking class is used to track a certain target
+ * These targets are other nodes, the Sun, the Earth or ECI coordinates.
+ * For more information on the targets, please refer to class AttitudeTarget.
  */
 class ESTNET_API TargetTracking: public INodeTracking {
 public:
+    /**
+     * Implementation of the tracking algorithm
+     * Calculates orientation that is required to point
+     * directly to the given target
+     *
+     * @return the target orientation as quaternion
+     */
     inet::Quaternion getNewOrientation();
 
+    /**
+     * THis function can be used to change the target that is tracked by the
+     * target tracking
+     * @param target: new target to be tracked
+     */
     void setTarget(AttitudeTarget target);
 
 protected:

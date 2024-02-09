@@ -1,4 +1,7 @@
 //
+// Copyright (C) 2020 Computer Science VII: Robotics and Telematics -
+// Julius-Maximilians-Universitaet Wuerzburg
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -120,6 +123,18 @@ public:
  * of an encapsulated Packet
  */
 class ESTNET_API MacFrameDestinationNodeNoFilter: public omnetpp::cObjectResultFilter {
+public:
+    using omnetpp::cObjectResultFilter::receiveSignal;
+    virtual void receiveSignal(omnetpp::cResultFilter *prev,
+            omnetpp::simtime_t_cref t, omnetpp::cObject *object,
+            omnetpp::cObject *details) override;
+};
+
+/** Result filter that checks if a packet is dropped in the mac module due to bit errors
+ * is addressed to the current satellite or not. If it is not for this satellite this packet
+ * is not relevant for the analysis of packet collisions. If the packet is for this satellite
+ * and is dropped due to bit error, a collision of two or more packets may has happened and is recorded. */
+class ESTNET_API PacketDroppedDueToBitErrorOrCollision: public omnetpp::cObjectResultFilter {
 public:
     using omnetpp::cObjectResultFilter::receiveSignal;
     virtual void receiveSignal(omnetpp::cResultFilter *prev,

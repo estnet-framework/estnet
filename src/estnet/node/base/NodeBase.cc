@@ -49,10 +49,6 @@ std::vector<IApp*> NodeBase::getApps() const {
                         "app"));
         apps.push_back(app);
     }
-    IApp *app = omnetpp::check_and_cast<IApp*>(
-            networkHost->getSubmodule("cpApp"));
-    apps.push_back(app);
-
     return apps;
 }
 

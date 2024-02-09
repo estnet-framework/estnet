@@ -30,11 +30,11 @@ simple PositionPropagatorKepler like IPositionPropagator
         
         double a @unit(km) = default(26554.0km);				// semimajor axis [km]
         double e = default(0.72);								// excentricity
-        double i = default(63.4);								// inclination [deg]
-        double raan = default(0.0);								// right ascension of the ascending node [deg]
-        double aop = default(0.0);								// argument of perigee [deg]
-        double v = default(0.0);								// initial true anomaly [deg]
+        double i @unit(deg) = default(63.4deg);					// inclination [deg]
+        double raan @unit(deg) = default(0.0deg);				// right ascension of the ascending node [deg]
+        double aop @unit(deg) = default(0.0deg);				// argument of perigee [deg]
+        double v  @unit(deg) = default(0.0deg);					// initial true anomaly [deg]
 
-        double dSAccMin = default(0.1);
+        double dSAccMin @unit(m) = default(0.1m);
 		// Minimal accuracy for each component of the state vector above which a new propagation is triggered
 }

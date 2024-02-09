@@ -1,0 +1,12 @@
+%description:
+Test atmospheric pathloss example
+
+%extraargs: -c AtmosphericModel
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/pathloss/omnetpp.ini
+
+%contains: results/AtmosphericModel-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].networkHost.appWrapper[0].app sentPk:count 30
+%contains: results/AtmosphericModel-#0.sca
+scalar SpaceTerrestrialNetwork.cg[0].networkHost.appWrapper[0].app rcvdPk:count 28

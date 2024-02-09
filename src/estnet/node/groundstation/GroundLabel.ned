@@ -26,7 +26,7 @@ simple GroundLabel
     parameters:
         // 3D model parameters
         string modelURL;                      // the URL or filename of the 3D model to be used for the node
-        double modelScale = default(1000000); // the scale of the 3D model
+        double modelScale = default(1000); // the scale of the 3D model
         // decorations and annotations
         string labelColor = default("#00ffffff");    // the color of the model label in hex RRGGBBAA format or "" to turn off labels
         double longitude @unit(deg);	// longitude at which the ground station is positioned on earth

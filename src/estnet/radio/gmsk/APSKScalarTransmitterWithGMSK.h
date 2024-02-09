@@ -29,6 +29,10 @@ namespace estnet {
  * APSKScalarTransmitter with support for GMSK modulation
  */
 class ESTNET_API APSKScalarTransmitterWithGMSK: public inet::physicallayer::ApskScalarTransmitter {
+    /**
+     * Overides initialization of ApskScalarTransmitter, as it does not allow
+     * other modulations
+     */
     virtual void initialize(int stage) override;
 };
 

@@ -19,8 +19,9 @@
 #ifndef __ESTNET_JAMMEDPACKETHANDLER_H_
 #define __ESTNET_JAMMEDPACKETHANDLER_H_
 
+#include <inet/physicallayer/contract/packetlevel/IRadio.h>
+
 #include "estnet/node/base/NodeBase.h"
-#include "inet/physicallayer/contract/packetlevel/IRadio.h"
 #include "estnet/node/errormodel/JammingStation.h"
 #include "estnet/siminterface/pubsub/Subscriber.h"
 
@@ -41,18 +42,33 @@ protected:
     virtual int numInitStages() const {
         return 11;
     }
+    /**
+     * @brief Initialize the module in multiple stages
+     */
     virtual void initialize(int stage);
+    /**
+     * @brief Handles incoming packets and throws them away,
+     * if node is in error state or is jammed
+     */
     virtual void handleMessage(cMessage *msg);
+    /**
+     * Print statistics and clean up
+     */
     virtual void finish();
+    /**
+     * React to messages via the publisher subscriber system
+     * These message contain updates to the node failure state
+     */
     virtual void receivedPubSubMessage(estnet::PubSubMsg *pubSubMsg);
 
 private:
-    std::vector<JammingStation*> _jammers;
-    NodeBase *_node;
-    inet::physicallayer::IRadio *_radio;
-    int _lostPacketCounter;
-    int _jammedPacketCounter;
-    bool _nodeFailureState;             ///< true if there is a node failure
+    std::vector<JammingStation*> _jammers;  // list of all jammers in network
+    NodeBase *_node;                        // parent node, belonging node for this module
+    inet::physicallayer::IRadio *_radio;    // belonging radio for this module
+    int _lostPacketCounter;                 // stats of lost packets due to node failure
+    int _jammedPacketCounter;               // stats of lost packets due to jammer
+    bool _nodeFailureState;                 // true if there is a node failure
+    std::string _msgKey;                    // subscription message key
 
     static omnetpp::simsignal_t jammedPacketCount;
     static omnetpp::simsignal_t lostPacketCount;

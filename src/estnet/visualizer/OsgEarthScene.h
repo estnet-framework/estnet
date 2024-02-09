@@ -59,15 +59,32 @@ public:
     OsgEarthScene();
     virtual ~OsgEarthScene();
 
+    /**
+     * Accessor to Singleton instance
+     * @return OsgEarthScene: singleton instance of OsgEarthScene
+     */
     static OsgEarthScene* getInstance();
 #ifdef WITH_OSG
+    /**
+     * Access to he scene, which is the group holding the osg stuff
+     * @return Group: group that holds the osg scene
+     */
     virtual osg::Group* getScene() {
         return scene;
     }
 #endif
 
 protected:
+    /**
+     * Initialization of the OSG visualization
+     */
     virtual void initialize() override;
+
+    /**
+     * Updates all visualized components in the OSG scene,
+     * i.e the earth's rotation and sunlight
+     *
+     */
     virtual void refreshDisplay() const override;
 };
 

@@ -20,8 +20,8 @@
 #define __ESTNET_INODETRACKING_H_
 
 #include <inet/common/geometry/common/Quaternion.h>
-#include "../../groundstation/GroundStation.h"
 
+#include "../../groundstation/GroundStation.h"
 #include "estnet/common/ESTNETDefs.h"
 #include "estnet/common/time/GlobalJulianDate.h"
 

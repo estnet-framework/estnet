@@ -1,4 +1,7 @@
 //
+// Copyright (C) 2020 Computer Science VII: Robotics and Telematics -
+// Julius-Maximilians-Universitaet Wuerzburg
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -11,8 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-//
-// @author: Timon Petermann
 //
 
 #include "OmnetUtils.h"

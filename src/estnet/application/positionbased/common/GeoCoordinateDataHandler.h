@@ -25,6 +25,10 @@
 
 namespace estnet {
 
+/**
+ *  A single point described by latitude and longitude is the data source.
+ */
+
 class ESTNET_API GeoCoordinateDataHandler: public IPositionData {
 public:
     GeoCoordinateDataHandler(std::string coord);

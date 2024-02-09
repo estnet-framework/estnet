@@ -34,7 +34,7 @@ simple ContactPlanCreatingApp
         double stopTime @unit(s) = default(-1s);              // time at which generation is stopped
         volatile double sendInterval @unit(s) = default(60s); // interval with which data is generated
         volatile int destinationNodeNo = default(1);          // destinated node of the generated packets
-        volatile int payloadSize = default(100);              // size of the generated packets
+        volatile int payloadSize @unit(B) = default(100B);              // size of the generated packets
         int nodeNo;                                           // own node no
     gates:
         input lowerLayerIn;

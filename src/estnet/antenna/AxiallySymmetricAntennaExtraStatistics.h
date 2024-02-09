@@ -25,7 +25,7 @@
 
 /*
  * Copy of inet::physicallayer::AxiallySymmetricAntenna with added
- *  recording of the gain and fix of the gain calculation
+ * recording of the gain and fix of the gain calculation
  */
 namespace estnet {
 

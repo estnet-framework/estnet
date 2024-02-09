@@ -23,6 +23,10 @@ import inet.linklayer.common.MacAddress;
 
 namespace estnet;
 
+//
+// This header hold information to identify the 
+// source and target app and the packet id
+//
 class AppHeader extends inet::FieldsChunk
 {
 	chunkLength = inet::B(8);

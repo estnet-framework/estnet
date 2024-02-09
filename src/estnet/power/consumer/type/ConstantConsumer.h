@@ -41,7 +41,7 @@ private:
     /* stores current consumption value */
     W _consumption;
 
-    /* prt to energy source module */
+    /* pointer to energy source module */
     inet::power::IEpEnergySource *_energySource = nullptr;
 
 protected:

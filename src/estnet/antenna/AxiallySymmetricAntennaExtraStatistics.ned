@@ -21,7 +21,7 @@ package estnet.antenna;
 import inet.physicallayer.antenna.AxiallySymmetricAntenna;
 
 //
-// Extension of inets AxiallySymmetricAntenna with an additional recording of the antennas gain.
+// Extension of inet's AxiallySymmetricAntenna with an additional recording of the antennas gain.
 //
 module AxiallySymmetricAntennaExtraStatistics extends AxiallySymmetricAntenna
 {

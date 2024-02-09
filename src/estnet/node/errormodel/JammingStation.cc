@@ -55,7 +55,7 @@ inetu::Hz JammingStation::getCenterFrequency() {
 
 bool JammingStation::isInJammingRange(inet::Coord &coordinates) {
     inetu::deg elevation = this->earthModel->calculateElevation(coordinates,
-            latitude, longitude);
+            latitude, longitude, inetu::m(0));
 
     return (elevation > minElevation);
 }

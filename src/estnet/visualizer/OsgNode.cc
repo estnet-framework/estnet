@@ -17,9 +17,6 @@
 //
 
 #include "OsgNode.h"
-#include "estnet/node/base/NodeBase.h"
-#include "common/OsgUtils.h"
-#include "estnet/mobility/satellite/common/QuaternionHelpers.h"
 
 #include <iomanip>
 #include <sstream>
@@ -51,6 +48,9 @@
 #endif
 
 #include "OsgEarthScene.h"
+#include "estnet/node/base/NodeBase.h"
+#include "common/OsgUtils.h"
+#include "estnet/mobility/satellite/common/QuaternionHelpers.h"
 
 namespace estnet {
 
@@ -66,10 +66,15 @@ void OsgNode::initialize(int stage) {
         labelColor = par("labelColor").stringValue();
         orbitColor = par("orbitColor").stringValue();
         orbitResolution = par("orbitResolution");
-        orbitUpdateFreq = par("orbitUpdateFreq");
-        orbitNextUpdate = orbitUpdateFreq;
+        orbitUpdateInterval = par("orbitUpdateInterval");
+        orbitNextUpdate = orbitUpdateInterval;
         satConeColor = par("satConeColor").stringValue();
-        satConeScaling = par("satConeScaling").doubleValue();
+        coneHeight = par("coneHeight").doubleValue();
+        int hasPar = this->getModuleByPath("^.networkHost.wlan[*].radio.antenna")->findPar("beamWidth");
+        if (hasPar != -1)
+            coneAngle = inetu::deg(this->getModuleByPath("^.networkHost.wlan[*].radio.antenna")->par("beamWidth"));
+        else
+            coneAngle = inetu::deg(par("coneAngle"));
         coordBaseColorX = par("coordBaseColorX").stringValue();
         coordBaseColorY = par("coordBaseColorY").stringValue();
         coordBaseColorZ = par("coordBaseColorZ").stringValue();
@@ -197,7 +202,7 @@ void OsgNode::handleMessage(omnetpp::cMessage *msg) {
             this->_orbitGeode->removeDrawables(0,
                     this->_orbitGeode->getNumDrawables());
             drawOrbit(time);
-            orbitNextUpdate += orbitUpdateFreq;
+            orbitNextUpdate += orbitUpdateInterval;
         }
     }
 #endif
@@ -214,12 +219,6 @@ void OsgNode::refreshDisplay() const {
         tempPos = satMobility->getCurrentPosition();
         tempAtt = satMobility->getCurrentAngularPositionRelativeToENU(time,
                 tempPos);
-        /*double attitudeMatPtr[3][3];
-         quaternionToMatrix(satMobility->getCurrentAngularPosition(), attitudeMatPtr);
-         tempAtt << attitudeMatPtr[0][0], attitudeMatPtr[0][1], attitudeMatPtr[0][2], 0.0,
-         attitudeMatPtr[1][0], attitudeMatPtr[1][1], attitudeMatPtr[1][2], 0.0,
-         attitudeMatPtr[2][0], attitudeMatPtr[2][1], attitudeMatPtr[2][2], 0.0,
-         0.0, 0.0, 0.0, 1.0;*/
     } else if (staticTerrestrialMobility != nullptr) {
         tempPos = staticTerrestrialMobility->getCurrentPosition();
         tempAtt =
@@ -231,9 +230,12 @@ void OsgNode::refreshDisplay() const {
                 this->getFullPath().c_str());
     }
 
-    pos[0] = tempPos.x;
-    pos[1] = tempPos.y;
-    pos[2] = tempPos.z;
+
+
+    pos[0] = fabs(tempPos.x) > 1e-5 ? tempPos.x : 0.0;
+    pos[1] = fabs(tempPos.y) > 1e-5 ? tempPos.y : 0.0;
+    pos[2] = fabs(tempPos.z) > 1e-5 ? tempPos.z : 0.0;
+
     osg::Matrixd tempAttOsg(tempAtt(0, 0), tempAtt(0, 1), tempAtt(0, 2),
             tempAtt(0, 3), tempAtt(1, 0), tempAtt(1, 1), tempAtt(1, 2),
             tempAtt(1, 3), tempAtt(2, 0), tempAtt(2, 1), tempAtt(2, 2),
@@ -307,21 +309,9 @@ void OsgNode::drawOrbit(double startTime) const {
 
 void OsgNode::drawSatelliteCone() const {
 #ifdef WITH_OSG
-    if (!this->satConeColor.empty()) {    // && satMobility != nullptr) {
-//        double earthRadius = EARTH_AVG_R / 1000.0;
-//        double orbitRadius = satMobility->getOrbitalRadius();
-//        // the angle between the center of the earth and the horizon as seen from
-//        // the satellite, in radians
-//        double alpha = std::asin(earthRadius / orbitRadius);
-//        // the distance of the horizon from the satellite, in meters
-//        double horizonDistance = std::sqrt(
-//                orbitRadius * orbitRadius - earthRadius * earthRadius) * 1000;
-//        double coneHeight = std::sin(alpha) * horizonDistance;
-//        double coneRadius = std::cos(alpha) * horizonDistance;
-//        // the offset is to position the tip to the satellite
-
-        auto cone = new osg::Cone(osg::Vec3(3.5e6 * 0.75, 0, 0),
-                2e5 * this->satConeScaling, 3.5e6);
+    if (!this->satConeColor.empty() && this->coneAngle.get() != 0) {
+        auto cone = new osg::Cone(osg::Vec3(coneHeight * 0.75, 0, 0),
+                        coneHeight * tan(coneAngle / 2.0), coneHeight);
         cone->setRotation(osg::Quat(0, -0.7071068, 0, 0.7071068));
 
         osg::ref_ptr<osg::Geode> coneGeode = new osg::Geode;

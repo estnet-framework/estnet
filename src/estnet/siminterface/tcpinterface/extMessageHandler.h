@@ -25,8 +25,17 @@ using namespace omnetpp;
 
 namespace estnet {
 
+/**
+ * handles external messages that arrieved on the tcp interface
+ */
 class ESTNET_API extMessageHandler: public Publisher {
 public:
+    /**
+     * Handler for message
+     * @param message: string message in JSON format that has to be handled
+     * @return int: success indicator, returns 0 if message was
+     *              handled successfully
+     */
     static int handleExtMessage(std::string const &message);
 };
 

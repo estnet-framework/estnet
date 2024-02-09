@@ -35,15 +35,19 @@ void NodeFailureModel::initialize() {
     //only start working if enabled
     if (enable) {
         //initialize all the class members
-        this->node = check_and_cast<Satellite*>(this->getParentModule());
+        this->_node = check_and_cast<Satellite*>(this->getParentModule());
 
         //schedule failure message
-        this->MTTF = this->par("MTTF").doubleValue();
-        this->MTTR = this->par("MTTR").doubleValue();
-        this->faultSeed = this->par("faultSeed");
-        failure = new cMessage("failure");
-        repaired = new cMessage("repaired");
-        scheduleAt(exponential(MTTF, faultSeed), failure);
+        this->_MTTF = this->par("MTTF").doubleValue();
+        this->_MTTR = this->par("MTTR").doubleValue();
+        this->_faultSeed = this->par("faultSeed");
+        _failure = new cMessage("failure");
+        _repaired = new cMessage("repaired");
+        scheduleAt(exponential(_MTTF, _faultSeed), _failure);
+
+        std::ostringstream strStream;
+        strStream << "/omnet/sat/" << _node->getNodeNo() << "/nodefailure";
+        _msgKey = strStream.str();
 
         // initialize publisher
         SimplePublisher::initialize();
@@ -53,17 +57,17 @@ void NodeFailureModel::initialize() {
 
 void NodeFailureModel::handleMessage(cMessage *msg) {
     //checking what kind of message need to be handled
-    if (msg == failure) {
+    if (msg == _failure) {
         //node reboots or processes EDACs
         this->emit(nodeFailed, true);
-        publishValue(std::to_string(1), "/omnet/satellite/nodefailure/");
-        scheduleAt(simTime() + exponential(MTTR, faultSeed), repaired);
-    } else if (msg == repaired) {
+        publishValue(std::to_string(1), _msgKey);
+        scheduleAt(simTime() + exponential(_MTTR, _faultSeed), _repaired);
+    } else if (msg == _repaired) {
         //node is repaired and ready to send or receive messages
         this->emit(nodeFailed, false);
-        publishValue(std::to_string(0), "/omnet/satellite/nodefailure/");
+        publishValue(std::to_string(0), _msgKey);
 
-        scheduleAt(simTime() + exponential(MTTF, faultSeed), failure);
+        scheduleAt(simTime() + exponential(_MTTF, _faultSeed), _failure);
     }
 }
 

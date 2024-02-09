@@ -36,7 +36,6 @@ namespace estnet {
  * Additionally it is determining if the satellite is in the earth's shadow
  *
  */
-
 class ESTNET_API EnergyModule: public omnetpp::cModule {
 public:
     /** @brief checks whether satellite in in Earth's shadow

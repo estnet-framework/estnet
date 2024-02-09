@@ -18,9 +18,9 @@
 
 #include "ThreeDbBeamwidthAntenna.h"
 
-#include "estnet/global_config.h"
-
 #include <inet/common/INETMath.h>
+
+#include "estnet/global_config.h"
 
 using namespace inet::math;
 
@@ -29,7 +29,7 @@ namespace estnet {
 Define_Module(ThreeDbBeamwidthAntenna);
 
 void ThreeDbBeamwidthAntenna::initialize(int stage) {
-    AntennaBaseWithOrientation::initialize(stage);
+    inet::physicallayer::AntennaBase::initialize(stage);
     if (stage == 0) {
         double maxGain = inet::math::dB2fraction(par("maxGain"));
         double minGain = inet::math::dB2fraction(par("minGain"));
@@ -45,7 +45,7 @@ std::ostream& ThreeDbBeamwidthAntenna::printToStream(std::ostream &stream,
     stream << "ThreeDbBeamwidthAntenna";
     stream << ", maxGain = " << gain->getMaxGain();
     stream << ", beamWidth = " << gain->getBeamWidth();
-    return AntennaBaseWithOrientation::printToStream(stream, level);
+    return inet::physicallayer::AntennaBase::printToStream(stream, level);
 }
 
 inet::units::values::deg ThreeDbBeamwidthAntenna::getBeamWidth() {

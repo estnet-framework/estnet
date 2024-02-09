@@ -26,8 +26,8 @@
 #include <inet/linklayer/common/MacAddress.h>
 #include <inet/physicallayer/contract/packetlevel/IRadio.h>
 #include <inet/queueing/contract/IPacketQueue.h>
-#include "../node/groundstation/GroundStation.h"
 
+#include "../node/groundstation/GroundStation.h"
 #include "estnet/common/node/NodeRegistry.h"
 
 namespace estnet {
@@ -59,6 +59,7 @@ private:
     GroundStation *_gs;
     simtime_t _lastSendTime;
     int _msgSameTime;
+    inet::units::values::s _interPacketDelay;
     std::map<int, inet::physicallayer::IRadio*> _connectedRadios;
     std::set<std::tuple<unsigned int, long, int64_t>> _seenFrames;
 };

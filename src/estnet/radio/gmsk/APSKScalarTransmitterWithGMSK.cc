@@ -17,7 +17,9 @@
 //
 
 #include "APSKScalarTransmitterWithGMSK.h"
+
 #include <inet/common/Units.h>
+
 #include "GMSKModulation.h"
 
 namespace estnet {

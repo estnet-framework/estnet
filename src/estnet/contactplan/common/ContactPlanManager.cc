@@ -17,12 +17,12 @@
 //
 
 #include "ContactPlanManager.h"
-#include "../reader/ContactPlanReader.h"
 
 #include <iostream>
 #include <fstream>
 
 #include "estnet/common/node/NodeRegistry.h"
+#include "../reader/ContactPlanReader.h"
 
 namespace estnet {
 

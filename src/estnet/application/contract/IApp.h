@@ -24,7 +24,7 @@
 namespace estnet {
 
 /**
- * Interface for apps
+ * Interface for applications
  */
 class ESTNET_API IApp {
 public:

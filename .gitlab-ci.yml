@@ -1,0 +1,44 @@
+default:
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/estnet_docker/archlinux/opp-estnet-headless
+
+stages:
+  - build
+  - test
+
+build_release:
+  stage: build
+  cache:
+    policy: push
+    paths:
+      - src/Makefile
+      - src/libESTNeT.so
+      - src/libESTNeT_dbg.so
+      - out
+  script:
+    - cd src && INET4_PROJ=/workspace/inet4 ./makemake
+    - make MODE=release
+
+test_examples:
+  stage: test
+  cache:
+    policy: pull
+    paths:
+      - src/Makefile
+      - src/libESTNeT.so
+      - src/libESTNeT_dbg.so
+      - out
+  script:
+    - env -C tests/examples ./runtests.sh
+    - env -C examples/orbitpropagation opp_run -u Cmdenv -c Kepler -n '../../src/estnet;/workspace/inet4/src' -l ../../out/gcc-release/src/ESTNeT
+
+test_non_opp:
+  stage: test
+  cache:
+    policy: pull
+    paths:
+      - src/Makefile
+      - src/libESTNeT.so
+      - src/libESTNeT_dbg.so
+      - out
+  script:
+    - env -C tests/unit ./runtests.sh

@@ -30,13 +30,11 @@ Define_Module(OmnidirectionalAntennaCpr);
 
 void OmnidirectionalAntennaCpr::initialize(int stage) {
     AntennaBase::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL) {
-        // find out which gain parameter name is used
-        double maxGain = dB2fraction(par("maxGain").doubleValue());
-        double gainpar = std::max(maxGain,
-                dB2fraction(par("gain").doubleValue()));
-        double baseGain = dB2fraction(par("baseGain").doubleValue());
-        gain = inet::makeShared<AntennaGain>(std::max(baseGain, gainpar));
-    }
+    // find out which gain parameter name is used
+    double maxGain = dB2fraction(par("maxGain").doubleValue());
+    double gainpar = std::max(maxGain, dB2fraction(par("gain").doubleValue()));
+    double baseGain = dB2fraction(par("baseGain").doubleValue());
+    gain = inet::makeShared<AntennaGain>(std::max(baseGain, gainpar));
+
 }
 }  // namespace estnet

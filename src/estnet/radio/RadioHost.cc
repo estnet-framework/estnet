@@ -41,6 +41,7 @@ void RadioHost::initialize(int stage) {
     if (stage == 0) {
         this->_nodeRegistry = NodeRegistry::getInstance();
         this->_nodeNo = this->par("nodeNo");
+        this->_interPacketDelay = inet::units::values::s(par("interPacketDelay").doubleValueInUnit("s"));
 
         _lastSendTime = -1;
         _msgSameTime = 0;
@@ -132,7 +133,7 @@ void RadioHost::handleMessage(omnetpp::cMessage *msg) {
             }
             // then send to all radios
             const int numLowerLayerOut = this->gateSize("lowerLayerOut");
-            const double interTxDelay = (numLowerLayerOut > 1) ? 0.1 : 0.0; //FIXME: find more suitable solution
+            const double interTxDelay = (numLowerLayerOut > 1) ? _interPacketDelay.get() : 0.0;
             for (int i = 0; i < numLowerLayerOut; i++) {
                 // using a small delay, so broadcasts don't interfer with each when nodes are moving
                 this->sendDirect(pkt->dup(), interTxDelay + _msgSameTime * 2e-6,

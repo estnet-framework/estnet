@@ -22,6 +22,9 @@ import inet.common.TagBase;
 
 namespace estnet;
 
+//
+// Tag for passing the source node ID to other modules
+//
 class SrcNodeIdTag extends inet::TagBase {
 	unsigned int srcNodeId;
 }

@@ -49,7 +49,7 @@ protected:
      */
     virtual double applyScaling(double ratio);
 
-    int _exponent;
+    double _exponent;
 };
 
 } //namespace

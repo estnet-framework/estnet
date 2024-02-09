@@ -28,16 +28,17 @@ simple OsgNode
         // OSG 3D model parameters
         string modelURL;											// 3D satellite icon path
         double modelScale = default(1);                             // Scaling factor for the 3D model
-        string labelColor = default("#ffff00ff");                   // color of the model label
+        string labelColor = default("#ffff00ff");                   	// color of the model label
         double timeStep @unit(s) = default(60s);                	// temporal simulation resolution
         string orbitColor = default("#80C8C8C8");                   // color of the orbit circle
-        double orbitResolution = default(100);                      // calculates 'orbitalResolution'
-        double orbitUpdateFreq = default(10000);                    // determines how often the orbit is redrawn
+        double orbitResolution = default(100);                      // calculates 'orbitalResolution' how often the position is sampled per orbit
+        double orbitUpdateInterval @unit(s) = default(10000s);      // determines how often the orbit is redrawn
         string satConeColor = default("#FFFFFF16");                 // defines the colors of satellite cones
-        double satConeScaling = default(1);                         // defines the radius of satellite cones relative to a maximum line of sight cone
+        double coneHeight @unit(m) = default(3.5e6m);               // height of the cone to visualize the antenna cone
+        double coneAngle @unit(deg) = default(0deg);                // opening angle of the cone to visualise the antenna cone
         string coordBaseColorX = default("");                       // defines the color of the x-axis: #ff0000ff
         string coordBaseColorY = default("");                       // defines the color of the y-axis: #00ff00ff
         string coordBaseColorZ = default("");                       // defines the color of the z-axis: #0000ffff
-        double coordBaseLength = default(5);                        // defines the length of the coordinate axis
-        double coordBaseWidth = default(25);                        // defines the width of the coordiate axis
+        double coordBaseLength @unit(m) = default(5m);                        // defines the length of the coordinate axis
+        double coordBaseWidth @unit(m) = default(25m);                        // defines the width of the coordiate axis
 }

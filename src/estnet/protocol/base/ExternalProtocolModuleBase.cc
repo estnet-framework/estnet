@@ -61,29 +61,6 @@ void ExternalProtocolModuleBase::sendTimeToProtocol() {
     this->sendToProtocol(commandString);
 }
 
-/*
- void ExternalProtocolModuleBase::sendRoutingTableToProtocol(
- const RoutingTable& routingTable) {
- long sequenceNumber = 0;
- // TODO : not hardcoded
- unsigned int maxPacketSize = 200;
- unsigned int numChunks = routingTable.getNumChunks(maxPacketSize);
- for (unsigned int currentChunk = 0; currentChunk < numChunks;
- currentChunk++) {
- uint8_t *byteStream;
- unsigned int byteStreamLen = routingTable.asByteStream(&byteStream,
- sequenceNumber, currentChunk, maxPacketSize);
- if (byteStreamLen > 0) {
- std::string commandString;
- this->buildReceiveCommand("receiveFRoutingTable", sequenceNumber, 0,
- 0, this->_nodeNo, this->_nodeNo, (uint8_t*) byteStream,
- byteStreamLen, commandString);
- this->sendToProtocol(commandString);
- delete[] byteStream;
- }
- }
- }
- */
 
 void ExternalProtocolModuleBase::processPacketFromUpperLayer(
         inet::Packet *appPacket) {
@@ -98,9 +75,7 @@ void ExternalProtocolModuleBase::processPacketFromUpperLayer(
     unsigned int destNodeNo = appHostHeader->getDestNodeID();
 
     std::string command("send");
-    /*if (appPacket->getKind() == BASIC_ROUTING_TABLE_APP_PACKET_TYPE) {
-     command = std::string("sendRoutingTable");
-     }*/
+
     // send to protocol
     std::string commandString;
     this->buildSendCommand(command, sequenceNumber, sourceAppId, destAppId,
@@ -282,8 +257,6 @@ inet::Packet* ExternalProtocolModuleBase::getRadioFrame(
     size_t protocolPacketSize = protocolPacketBytes.size();
     std::string protocolPacket(protocolPacketBytes.begin(),
             protocolPacketBytes.end());
-    //TODO: what to do with this information?
-    // rebuild the packet completly? -> packet content should not be changed by protocol
 
     if (this->_nodeNo == sourceNodeNo) {
 

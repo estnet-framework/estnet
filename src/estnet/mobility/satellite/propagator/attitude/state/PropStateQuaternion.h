@@ -23,6 +23,9 @@
 
 namespace estnet {
 
+/**
+ * Class describing the attitude state using euler angles
+ */
 class ESTNET_API PropStateQuaternion: public PropStateAttitude {
 public:
     PropStateQuaternion();

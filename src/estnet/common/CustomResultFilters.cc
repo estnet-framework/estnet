@@ -1,4 +1,7 @@
 //
+// Copyright (C) 2020 Computer Science VII: Robotics and Telematics -
+// Julius-Maximilians-Universitaet Wuerzburg
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -19,6 +22,9 @@
 #include <inet/physicallayer/unitdisk/UnitDiskPhyHeader_m.h>
 #include <inet/common/packet/chunk/Chunk.h>
 #include <inet/common/packet/Packet.h>
+#include <inet/common/Simsignals_m.h>
+#include <inet/linklayer/acking/AckingMac.h>
+#include <inet/common/packet/chunk/Chunk.h>
 
 #include "estnet/protocol/common/NextHopTag_m.h"
 #include "estnet/protocol/common/NumHopsHeader_m.h"
@@ -26,6 +32,8 @@
 #include "estnet/application/common/AppHostHeader_m.h"
 #include "estnet/application/common/DestNodeIdTag_m.h"
 #include "estnet/application/common/SrcNodeIdTag_m.h"
+#include "estnet/node/base/NodeBase.h"
+#include "estnet/common/AddressUtils.h"
 
 namespace estnet {
 using namespace inet;
@@ -105,7 +113,7 @@ void NextHopNodeNoFilter::receiveSignal(omnetpp::cResultFilter *prev,
         try {
             auto nextHopTag = msg->getTag<NextHopReq>();
             fire(this, t, nextHopTag->getNextHopNodeNo(), details);
-        } catch (std::exception e) {
+        } catch (std::exception& e) {
 
         }
     }
@@ -116,7 +124,12 @@ void MacFrameSourceNodeNoFilter::receiveSignal(omnetpp::cResultFilter *prev,
         omnetpp::simtime_t_cref t, omnetpp::cObject *object,
         omnetpp::cObject *details) {
     if (auto pkt = dynamic_cast<Packet*>(object)) {
-        auto ackingMacHeader = pkt->peekAtFront<inet::AckingMacHeader>();
+        inet::Ptr<const inet::AckingMacHeader> ackingMacHeader;
+        try{
+            ackingMacHeader = pkt->peekAtFront<inet::AckingMacHeader>();
+        } catch(std::exception& e){
+            EV_ERROR << "Packet does not have peekable AckingMacHeader" << endl;
+        }
         if (ackingMacHeader) {
             auto srcAddress = ackingMacHeader->getSrc();
             fire(this, t, (unsigned long) srcAddress.getInt(), details);
@@ -137,5 +150,27 @@ void MacFrameDestinationNodeNoFilter::receiveSignal(
     }
 }
 Register_ResultFilter("macFrameDestNodeNo", MacFrameDestinationNodeNoFilter);
+
+
+void PacketDroppedDueToBitErrorOrCollision::receiveSignal(
+        omnetpp::cResultFilter *prev, omnetpp::simtime_t_cref t,
+        omnetpp::cObject *object, omnetpp::cObject *details) {
+
+    if (check_and_cast<PacketDropDetails *>(details)->getReason() == inet::INCORRECTLY_RECEIVED) {
+        if (auto pkt = dynamic_cast<Packet*>(object)) {
+            // get node number of the node where the packet arrived
+            auto mac = dynamic_cast<inet::AckingMac*>(pkt->getArrivalModule());
+            auto node = dynamic_cast<estnet::NodeBase *>(mac->getModuleByPath("^.^.^"));
+            // get mac address of current node
+            auto currNodeMacAddress = getMacAddressOfNode(node->getNodeNo(), 1);
+
+            auto macHeader = pkt->peekAtFront<AckingMacHeader>();
+            if (macHeader->getDest().equals(currNodeMacAddress)) {
+                fire(this, t, object, details);
+            }
+        }
+    }
+}
+Register_ResultFilter("packetDroppedDueToBitErrorOrCollision", PacketDroppedDueToBitErrorOrCollision);
 
 }  // namespace estnet

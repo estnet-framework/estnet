@@ -25,6 +25,12 @@
 
 namespace estnet {
 
+/**
+ *  It loads AIS ship data from a specified file. For each integer pair of latitude and longitude
+ *  a single multiplier is loaded representing the mean number of ships at this point. When the data
+ *  is accessed the multipliers are just returned.
+ */
+
 class ESTNET_API AISDataLoader: public IPositionData {
 public:
     AISDataLoader(std::string path);

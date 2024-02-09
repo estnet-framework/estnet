@@ -21,20 +21,25 @@
 
 #include <inet/common/Units.h>
 #include <inet/common/Ptr.h>
+#include <inet/physicallayer/base/packetlevel/AntennaBase.h>
 
-#include "AntennaBaseWithOrientation.h"
+#include "estnet/common/ESTNETDefs.h"
 
 namespace estnet {
 
 /**
  * Base class for antennas modeled via
- * a 3dB Beamwidth.
+ * a 3dB beam width.
+ * The gain calculation is based on a gain range and the beam width.
  */
-class ESTNET_API ThreeDbBeamwidthAntenna: public AntennaBaseWithOrientation {
+class ESTNET_API ThreeDbBeamwidthAntenna: public inet::physicallayer::AntennaBase {
 protected:
     /** @brief initialization method */
     virtual void initialize(int stage) override;
 
+    /**
+     * Gain class for a 3dB Beamwidth Antenna
+     */
     class ThreeDbAntennaGain: public inet::physicallayer::IAntennaGain {
     public:
         ThreeDbAntennaGain(double maxGain, double minGain,
@@ -68,7 +73,7 @@ public:
             override {
         return gain;
     }
-    /** @brief Returns the Beamwidth of the Antenna*/
+    /** @brief Returns the beam width of the Antenna*/
     virtual inet::units::values::deg getBeamWidth();
 };
 

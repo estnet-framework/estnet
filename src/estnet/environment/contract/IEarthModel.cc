@@ -124,25 +124,49 @@ void IEarthModel::computeNadirCoordinateFrameFromECEF(cJulian time,
 }
 
 inetu::deg IEarthModel::calculateElevation(const inet::Coord &satPositionEci,
-        const inetu::deg &latitude, const inetu::deg &longitude) const {
+        const inetu::deg &latitude, const inetu::deg &longitude,
+        const inetu::m &altitude) const {
     inetu::m satAltitude;
     inetu::deg satLong, satLat;
     this->convertECIToLatLongHeight(
             GlobalJulianDate::getInstance().currentSimTime(), satPositionEci,
             satLat, satLong, satAltitude);
 
-    // Elevation calculation: TODO: check if correct
+    return calculateElevation(latitude, longitude, altitude, satLat, satLong,
+            satAltitude);
+}
+
+inetu::deg IEarthModel::calculateElevation(const inet::Coord &positionEci1,
+        const inet::Coord &positionEci2) const {
+    // convert to lat, long, alt
+    inetu::m altitude1, altitude2;
+    inetu::deg longitude1, latitude1, longitude2, latitude2;
+    this->convertECIToLatLongHeight(
+            GlobalJulianDate::getInstance().currentSimTime(), positionEci1,
+            latitude1, longitude1, altitude1);
+    this->convertECIToLatLongHeight(
+            GlobalJulianDate::getInstance().currentSimTime(), positionEci2,
+            latitude2, longitude2, altitude2);
+
+    return calculateElevation(latitude1, longitude1, altitude1, latitude2,
+            longitude2, altitude2);
+}
+
+inetu::deg IEarthModel::calculateElevation(const inetu::deg &lat1,
+        const inetu::deg &long1, const inetu::m &alt1, const inetu::deg &lat2,
+        const inetu::deg &long2, const inetu::m &alt2) const {
+    // Elevation calculation
     double angularDistance = acos(
-            sin(satLat) * sin(latitude)
-                    + cos(satLat) * cos(latitude)
-                            * cos(
-                                    inetu::deg(
-                                            abs((satLong - longitude).get()))));
+            sin(lat1) * sin(lat2)
+                    + cos(lat1) * cos(lat2)
+                            * cos(inetu::deg(abs((long1 - long2).get()))));
+
+    inetu::m r_gs = (alt1 > alt2 ? alt2 : alt1) + inetu::m(EARTH_AVG_R);
+    inetu::m r_sat = (alt1 < alt2 ? alt2 : alt1) + inetu::m(EARTH_AVG_R);
+
     double nadirAngle = atan(
-            (EARTH_AVG_R * sin(angularDistance) / (satPositionEci.length()))
-                    / (1
-                            - (EARTH_AVG_R * cos(angularDistance)
-                                    / (satPositionEci.length()))));
+            (r_gs * sin(angularDistance) / (r_sat)).get()
+                    / (1 - (r_gs * cos(angularDistance) / (r_sat)).get()));
     return inetu::rad( M_PI / 2 - angularDistance - nadirAngle);
 }
 } // namespace estnet

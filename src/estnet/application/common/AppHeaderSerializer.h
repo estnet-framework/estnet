@@ -28,7 +28,7 @@ using namespace inet;
 namespace estnet {
 
 /**
- * Converts between CompassAbstractProtocolHeader and binary network byte order representation of the header.
+ * Converts between AppHeader and binary network byte order representation of the header.
  */
 class ESTNET_API AppHeaderSerializer: public FieldsChunkSerializer {
 protected:

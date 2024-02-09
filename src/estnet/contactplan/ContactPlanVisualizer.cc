@@ -17,11 +17,6 @@
 //
 
 #include "ContactPlanVisualizer.h"
-#include "estnet/common/node/NodeRegistry.h"
-#include "estnet/visualizer/OsgEarthScene.h"
-#include "estnet/visualizer/OsgNode.h"
-#include "estnet/visualizer/common/OsgUtils.h"
-#include "estnet/common/StlUtils.h"
 
 #ifdef WITH_OSG
 #include <osg/Depth>
@@ -31,6 +26,18 @@
 #include <osgEarthUtil/LinearLineOfSight>
 #include <osgUtil/UpdateVisitor>
 #endif
+
+#include <inet/common/geometry/object/LineSegment.h>
+#include <inet/common/geometry/base/ShapeBase.h>
+#include <inet/environment/common/PhysicalEnvironment.h>
+#include <inet/common/geometry/shape/Sphere.h>
+
+#include "estnet/common/node/NodeRegistry.h"
+#include "estnet/visualizer/OsgEarthScene.h"
+#include "estnet/visualizer/OsgNode.h"
+#include "estnet/visualizer/common/OsgUtils.h"
+#include "estnet/common/StlUtils.h"
+
 
 namespace estnet {
 
@@ -47,6 +54,10 @@ ContactPlanVisualizer::ContactPlanVisualizer() {
 }
 
 ContactPlanVisualizer::~ContactPlanVisualizer() {
+#ifdef WITH_OSG
+    this->_losNodes.clear();
+#endif // WITH_OSG
+
     instance = nullptr;
 }
 
@@ -77,6 +88,7 @@ void ContactPlanVisualizer::initialize(int stage) {
                 this->par("satToGroundColorOnPlan").stringValue();
         this->_satToGroundWidth = this->par("satToGroundWidth").doubleValue();
         this->_show = this->par("show").boolValue();
+
     } else if (stage == 1) {
 #ifdef WITH_OSG
         this->_scene = OsgEarthScene::getInstance()->getScene()->asGroup();
@@ -165,9 +177,6 @@ void ContactPlanVisualizer::refreshDisplay() const {
         return;
     }
 #ifdef WITH_OSG
-    // TODO make sure satellite positions are updated, how does updateVisitor get
-    // the position?
-
     // los update callbacks are called during update traversal, so do it now
     osgUtil::UpdateVisitor updateVisitor;
     this->_scene->traverse(updateVisitor);
@@ -185,16 +194,43 @@ void ContactPlanVisualizer::refreshDisplay() const {
     int numSatToSatOnPlan = 0;
     int numSatToGroundOnPlan = 0;
 
+    NodeRegistry *nodeRegistry = NodeRegistry::getInstance();
+
+
     for (auto losNode : this->_losNodes) {
+        int type = -1;
+        unsigned int aNodeId = 0, bNodeId = 0;
+        losNode->getUserValue("type", type);
+        losNode->getUserValue("aNodeId", aNodeId);
+        losNode->getUserValue("bNodeId", bNodeId);
+
+
+
         if (losNode->getHasLOS()) {
             auto start = losNode->getStartWorld();
             auto end = losNode->getEndWorld();
 
-            int type = -1;
-            unsigned int aNodeId = 0, bNodeId = 0;
-            losNode->getUserValue("type", type);
-            losNode->getUserValue("aNodeId", aNodeId);
-            losNode->getUserValue("bNodeId", bNodeId);
+            // doing additional check for Earths intersection
+            // as with large distances, there might be a double overflow
+            inet::physicalenvironment::PhysicalEnvironment *pEnv =
+                    omnetpp::check_and_cast<
+                            inet::physicalenvironment::PhysicalEnvironment*>(
+                            this->getSystemModule()->getSubmodule(
+                                    "physicalEnvironment"));
+            const inet::ShapeBase *shape = pEnv->getObject(0)->getShape();
+            auto earth = const_cast<inet::Sphere*>(omnetpp::check_and_cast<
+                    const inet::Sphere*>(shape));
+
+            auto p1 = nodeRegistry->getNode(aNodeId)->getMobility()->getCurrentPosition();
+            auto p2 = nodeRegistry->getNode(bNodeId)->getMobility()->getCurrentPosition();
+            // the 10e6 is a scaling factor to prevent the overflow
+            inet::LineSegment line = inet::LineSegment(
+                    p1 / 1000000, p2 / 1000000);
+            inet::Coord c1, c2, c3, c4;
+            earth->setRadius(earth->getRadius() / 1000000);
+            bool recheck = !earth->computeIntersection(line, c1, c2, c3, c4);
+            earth->setRadius(earth->getRadius() * 1000000);
+
 
             bool isOnContactPlan = contains(activeContacts,
                     std::tuple<unsigned int, unsigned int>(aNodeId, bNodeId));
@@ -225,8 +261,7 @@ void ContactPlanVisualizer::refreshDisplay() const {
                 numSatToSat++;
                 numSatToSatOnPlan++;
             }
-
-            if (draw) {
+            if (draw && recheck) {
                 this->_connections->addDrawable(
                         createLineBetweenPoints(start, end, lineWidth,
                                 lineColor));

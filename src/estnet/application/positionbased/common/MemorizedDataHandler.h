@@ -29,6 +29,12 @@
 
 namespace estnet {
 
+/**
+ *  Extends on the structure of the AISDataLoader, but memorizes each cell the data was send from. Once
+ *  the same cells are queried again, they are ignored since the data was already received from this source.
+ *  They only become active again during the next orbit of the satellite.
+ */
+
 class ESTNET_API MemorizedDataHandler: public IPositionData {
 public:
     MemorizedDataHandler(SatMobility *satMobility, IEarthModel *earthModel,
@@ -41,6 +47,8 @@ public:
     virtual void getDataForCone(double latitude, double longitude,
             double altitude, double beamWidth, double &multiplier) override;
 
+    virtual void setDataForPointInAcquaintedShip(inet::Coord coord,
+            inet::Coord speedCoord, double latitude, double longitude);
     virtual void setDataForConeInAcquaintedShip(inet::Coord coord,
             inet::Coord speedCoord, double latitude, double longitude,
             double altitude, double beamWidth);

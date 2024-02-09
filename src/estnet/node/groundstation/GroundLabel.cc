@@ -16,6 +16,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+
+#include "GroundLabel.h"
+
 #ifdef WITH_OSG
 #include <omnetpp/osgutil.h>
 
@@ -33,8 +36,6 @@
 #include <osgEarth/Version>
 
 #endif // WITH_OSG
-
-#include "GroundLabel.h"
 
 namespace estnet {
 
@@ -58,35 +59,47 @@ void GroundLabel::initialize(int stage) {
         auto scene = OsgEarthScene::getInstance()->getScene();
         mapNode = osgEarth::MapNode::findMapNode(scene);
 
+
+        auto modelNode = osgDB::readNodeFile(modelURL);
+        modelNode->getOrCreateStateSet()->setAttributeAndModes(
+                new osg::Program(),
+                osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+        modelNode->getOrCreateStateSet()->setMode(
+        GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+
         // build up the node representing this module
         // an ObjectLocatorNode allows positioning a model using world coordinates
-        geoTransform = new osgEarth::GeoTransform();
         locatorNode = new osg::PositionAttitudeTransform();
-        auto modelNode = osgDB::readNodeFile(modelURL);
+        // scale and rotate the model if necessary
+        locatorNode->setScale(osg::Vec3d(modelScale, modelScale, modelScale));
+        locatorNode->setAttitude(osg::Quat(0, osg::Vec3d(0, 0, 1)));
+
+
+        geoTransform = new osgEarth::GeoTransform();
 
         auto objectNode = new omnetpp::cObjectOsgNode(this);
+        objectNode->addChild(modelNode);
+        geoTransform->addChild(locatorNode);
+
 #if OSGEARTH_VERSION_GREATER_OR_EQUAL(2, 10, 0)
     mapNode->addChild(geoTransform);
 #else
         mapNode->getModelLayerGroup()->addChild(geoTransform);
 #endif
-        geoTransform->addChild(locatorNode);
-        locatorNode->addChild(objectNode);
-        objectNode->addChild(modelNode);
+        //geoTransform->addChild(locatorNode);
+        //locatorNode->addChild(objectNode);
+        //objectNode->addChild(modelNode);
+
+        // if the model isn't rotated the same way as inet uses it by default
+        auto modelMatrixTransform = new osg::MatrixTransform();
+        locatorNode->addChild(modelMatrixTransform);
+        modelMatrixTransform->addChild(objectNode);
 
         geoTransform->setPosition(
                 osgEarth::GeoPoint(mapNode->getMapSRS(), longitude, latitude,
                         altitude));
-        locatorNode->setAttitude(osg::Quat(0, osg::Vec3d(0, 0, 1)));
 
-        locatorNode->getOrCreateStateSet()->setAttributeAndModes(
-                new osg::Program(),
-                osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-        locatorNode->getOrCreateStateSet()->setMode(
-        GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-        // scale and rotate the model if necessary
-        locatorNode->setScale(osg::Vec3d(modelScale, modelScale, modelScale));
 
         // set the name label if the color is specified
         if (!labelColor.empty()) {
@@ -105,7 +118,8 @@ void GroundLabel::initialize(int stage) {
         }
 
         // add the locator node to the scene
-        mapNode->addChild(locatorNode);
+        //mapNode->addChild(locatorNode);
+        scene->asGroup()->addChild(geoTransform);
 
         // position the nodes, so we will see them at correct position right after
         // initialization

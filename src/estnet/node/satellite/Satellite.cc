@@ -61,7 +61,6 @@ void Satellite::addContactTo(unsigned int other_node_no) {
                 inet::Coord::X_AXIS);
     }
 
-    //TODO
     if (dynamic_cast<Satellite*>(NodeRegistry::getInstance()->getNode(
             other_node_no)) != nullptr) {
         Satellite *targetSat =
@@ -86,7 +85,9 @@ void Satellite::removeContactTo(unsigned int other_node_no) {
                 inet::Coord::X_AXIS);
     }
 
-    //TODO
+    //TODO create module for attitude target scheduling. Currently the satellite will orient itself towards the sun
+    //after each contact. If this behavior is not wanted. It can be changed here in the code or by setting
+    //a different target in the attitude controller every time it is needed.
     if (dynamic_cast<Satellite*>(NodeRegistry::getInstance()->getNode(
             other_node_no)) != nullptr) {
         Satellite *targetSat =

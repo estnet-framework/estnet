@@ -34,21 +34,23 @@ void PositionPropagatorKepler::initialize() {
     raan = raan_deg * RADS_PER_DEG;
     aop = aop_deg * RADS_PER_DEG;
     v = v_deg * RADS_PER_DEG;
+
+    // aproximate initial mean anomaly from given initial true anomaly
+    M_ini = GetMeanAnomalyFromTrueAnomaly(v);
+
+
 }
 
 void PositionPropagatorKepler::handleMessage(omnetpp::cMessage *msg) {
 }
 
 bool PositionPropagatorKepler::needsStateUpdate(cJulian const &targetTime) {
-    // TODO: check for age of 60 sec.
-    //    if(this->_lastUpdateTime.toGMST() == targetTime.toGMST())
-    //    {
-    //        false;
-    //    }
-    //    else
-    //    {
-    //        true;
-    //    }
+    // Check if the time is different to the last update
+    if(this->_lastUpdateTime.toGMST() == targetTime.toGMST())
+    {
+        return false;
+    }
+    
     return true;
 }
 
@@ -82,7 +84,28 @@ double PositionPropagatorKepler::getOrbitalRadius(
 }
 
 double PositionPropagatorKepler::GetMeanAnomaly(double time) const {
-    return (sqrt(GM / pow(a, 3)) * (time - this->getOrbitalPeriod())) + 2 * M_PI;
+    // calculated average rate of sweep
+    double T = this->getOrbitalPeriod();
+    double n = 2 * M_PI / T;
+
+
+    // solve for mean anomaly
+    double M = n * (time) + M_ini;
+    while(M > 2 * M_PI){
+        M -= 2 * M_PI;
+    }
+    return M;
+}
+
+double PositionPropagatorKepler::GetMeanAnomalyFromTrueAnomaly(double v) const {
+    // Using series expansion for conversion
+    double M = v;
+    M += -e * sin(v);
+    M += (3/4*pow(e,2) + 1/8*pow(e,4))*sin(2*v);
+    M += -1/3*pow(e,3) * sin(3*v);
+    M += 5/32*pow(e,4) * sin(4*v);
+
+    return M;
 }
 
 /***
@@ -101,18 +124,13 @@ double PositionPropagatorKepler::GetEccentricAnomaly(double time) const {
     double MA = this->GetMeanAnomaly(time);    //< get mean anomaly
     double reduceM = this->NormalizeAngle(MA); //< reduce M to [-PI PI) interval
 
+
     // compute start value according to A. W. Odell and R. H. Gooding S12 starter
     double E;
     if (fabs(reduceM) < (1.0 / 6.0)) {
         E = reduceM + this->e * (cbrt(6 * reduceM) - reduceM); //< cbrt is cubic root
     } else {
-        if (reduceM < 0) {
-            double w = M_PI + reduceM;
-            E = reduceM + this->e * (A * w / (B - w) - M_PI - reduceM);
-        } else {
-            double w = M_PI - reduceM;
-            E = reduceM * this->e * (M_PI - A * w / (B - w) - reduceM);
-        }
+        E = reduceM;
     }
 
     double e1 = 1 - this->e;
@@ -138,6 +156,7 @@ double PositionPropagatorKepler::GetEccentricAnomaly(double time) const {
         // update eccentric anomaly, using expressions that limit underflow problems
         double w = fd + 0.5 * dee * (fdd + dee * fddd / 3);
         fd += dee * (fdd + 0.5 * dee * fddd);
+
         E -= (f - dee * (fd - w)) / fd;
     }
 
@@ -159,7 +178,7 @@ double PositionPropagatorKepler::eMeSinE(double E) const {
 
     // the inequality test below IS intentional and should NOT be replaced by a
     // check with a small tolerance
-    double x0 = 0;
+    double x0;
     while (x != x0) {
         d += 2;
         term *= mE2 / (d * (d + 1));
@@ -180,7 +199,7 @@ double PositionPropagatorKepler::NormalizeAngle(double x) {
 double PositionPropagatorKepler::GetTrueAnomaly(double time) const {
     return (atan(
             sqrt((1 + this->e) / (1 - this->e))
-                    * tan(this->GetEccentricAnomaly(time) / 2)) * 2) + v;
+                    * tan(this->GetEccentricAnomaly(time) / 2)) * 2);
 }
 
 double PositionPropagatorKepler::GetRadiusFromEccentricAnomaly(
@@ -200,7 +219,6 @@ double PositionPropagatorKepler::GetSpecificAngularmomentum() const {
 }
 
 cEci PositionPropagatorKepler::GetState(double time) const {
-
     cEci ret;
     cVector pos, vel;
 

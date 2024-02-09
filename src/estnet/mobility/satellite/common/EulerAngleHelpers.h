@@ -22,13 +22,16 @@
 #include <inet/common/geometry/common/Coord.h>
 #include <inet/common/geometry/common/EulerAngles.h>
 
+#include "estnet/common/matrix/Matrix.h"
+
+
 namespace estnet {
 
 /** @brief Converts the given rotation matrix R
  *  into yaw, pitch, roll euler angles.
  *  Rotation order is HPR/YPR/ZXY.
  */
-void getEulerAnglesFromMatrix(double R[3][3], double &yaw, double &pitch,
+void getEulerAnglesFromMatrix(M4x4d& R, double &yaw, double &pitch,
         double &roll);
 
 /** @brief Converts the given yaw, pitch, roll euler angles
@@ -36,7 +39,7 @@ void getEulerAnglesFromMatrix(double R[3][3], double &yaw, double &pitch,
  *  Rotation order is HPR/YPR/ZXY.
  */
 void getMatrixFromEulerAngles(double yaw, double pitch, double roll,
-        double matrix[3][3]);
+        M4x4d& matrix);
 
 /** @brief Combines two euler angle sets together.
  *  Rotation order is HPR/YPR/ZXY.

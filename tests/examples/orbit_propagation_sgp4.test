@@ -1,0 +1,7 @@
+%description: 
+Test orbit propagation example against any runtime errors
+
+%extraargs: -c SGP4_TLE
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/orbitpropagation/omnetpp.ini

@@ -18,8 +18,6 @@
 
 #include "ContactPlanBasedNodeTracking.h"
 
-//#include <inet/common/ModuleAccess.h>
-
 #include "estnet/common/ModuleAccess.h"
 #include "estnet/mobility/satellite/SatMobility.h"
 #include "estnet/common/node/NodeRegistry.h"

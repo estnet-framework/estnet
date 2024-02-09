@@ -25,9 +25,16 @@
 
 namespace estnet {
 
+/**
+ * Extends the ApksRadio class with extra statistics and sets padding lendth to zero.
+ */
 class ESTNET_API APSKScalarRadioExtraStatistics: public inet::physicallayer::ApskRadio {
 protected:
-    virtual inet::units::values::b computePaddingLength(
+      /**
+       * Set padding lenght to zero
+       * @return 0 bits
+       */
+      virtual inet::units::values::b computePaddingLength(
             inet::units::values::b length,
             const inet::physicallayer::ConvolutionalCode *forwardErrorCorrection,
             const inet::physicallayer::ApskModulationBase *modulation) const

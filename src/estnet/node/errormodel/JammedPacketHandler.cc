@@ -20,6 +20,8 @@
 
 #include <inet/physicallayer/base/packetlevel/NarrowbandReceiverBase.h>
 
+#include "estnet/common/node/NodeRegistry.h"
+
 namespace estnet {
 
 Define_Module(JammedPacketHandler);
@@ -30,7 +32,7 @@ omnetpp::simsignal_t JammedPacketHandler::lostPacketCount = registerSignal(
         "lostPacketCount");
 
 JammedPacketHandler::JammedPacketHandler() :
-        Subscriber(this->getModuleByPath(".^.^.")) {
+        Subscriber(this->getModuleByPath(".^.")) {
 }
 
 void JammedPacketHandler::initialize(int stage) {
@@ -85,13 +87,24 @@ void JammedPacketHandler::initialize(int stage) {
         this->emit(jammedPacketCount, this->_jammedPacketCounter);
         this->emit(lostPacketCount, this->_lostPacketCounter);
 
-        // subscribe node failure state
-        subscribeTopic("/omnet/satellite/nodefailure/");
+        std::ostringstream strStream;
+        strStream << "/omnet/";
+
+        // extract the string from the string stream
+        if (NodeRegistry::getInstance()->isSatellite(_node->getNodeNo())) {
+            strStream << "sat/";
+
+        } else {
+            strStream << "gs/";
+        }
+        strStream << _node->getNodeNo() << "/nodefailure";
+        _msgKey = strStream.str();
+
+        subscribeTopic (_msgKey);
     }
 }
 
 void JammedPacketHandler::handleMessage(cMessage *msg) {
-
     if (msg->arrivedOn("lowerLayerIn") || msg->arrivedOn("upperLayerIn")) {
         //check whether node is jammed by a jammingStation
         inet::Coord position = this->_node->getMobility()->getCurrentPosition();
@@ -108,12 +121,14 @@ void JammedPacketHandler::handleMessage(cMessage *msg) {
             this->_jammedPacketCounter++;
             this->emit(jammedPacketCount, this->_jammedPacketCounter);
             EV_INFO << "Node got jammed: Packet is lost" << omnetpp::endl;
+            delete msg;
         } else if (_nodeFailureState) {
             // node is in failure state
             this->_lostPacketCounter++;
             this->emit(lostPacketCount, this->_lostPacketCounter);
             EV_INFO << "Node is in failure state: Packet is lost"
                            << omnetpp::endl;
+            delete msg;
         } else {
             // forward packet
             if (msg->arrivedOn("upperLayerIn")) {
@@ -129,7 +144,7 @@ void JammedPacketHandler::handleMessage(cMessage *msg) {
 }
 
 void JammedPacketHandler::receivedPubSubMessage(estnet::PubSubMsg *pubSubMsg) {
-    if ((std::string) pubSubMsg->key == "/omnet/satellite/nodefailure/") {
+    if ((std::string) pubSubMsg->key == _msgKey) {
         _nodeFailureState = atoi((pubSubMsg->value).c_str());
         EV << "Satellites failure state is " << _nodeFailureState << std::endl;
     }

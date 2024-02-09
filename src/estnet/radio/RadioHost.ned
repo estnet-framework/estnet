@@ -30,6 +30,7 @@ module RadioHost like IRadioHost
     parameters:
         int numRadios = default(1);             // Number of radios
         int nodeNo;                             // Node No
+        double interPacketDelay @unit("s") = default(0.1s);
         string queueModule = default(".RH_NIC_queue[0]"); // Path from the network host to the queue module
         @class(RadioHost);
     gates:

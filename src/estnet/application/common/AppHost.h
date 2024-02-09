@@ -30,6 +30,12 @@
 
 namespace estnet {
 
+
+/**
+ * The app-host connects all different apps to the protocol
+ * It adds node information header (source and destination Node ID).
+ * Passing the received packet to the correct application.
+ */
 class ESTNET_API AppHost: public omnetpp::cSimpleModule {
 private:
     long _numSent = 0;

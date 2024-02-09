@@ -152,11 +152,41 @@ public:
      *  determined
      *  @param latitude of geocentric point
      *  @param longitude of geocentric point
+     *  @param altitude of geocentric point
      *  @return elevation angle of the given point relative to the
      *      geocentric coordinaties
      */
     virtual inetu::deg calculateElevation(const inet::Coord &satPositionEci,
-            const inetu::deg &latitude, const inetu::deg &longitude) const;
+            const inetu::deg &latitude, const inetu::deg &longitude,
+            const inetu::m &altitude) const;
+
+    /** @brief calculate the elevation of a point relative to a point
+     *  given both in ECI coordinates. THe function automatically choose the
+     *  point with lower elevation as ground point
+     *  @param first position as Eci-coordinate to which the elevation is
+     *  determined
+     *  @param second position as Eci-coordinate to which the elevation is
+     *  determined
+     *  @return elevation angle between the given points
+     */
+    inetu::deg calculateElevation(const inet::Coord &positionEci1,
+            const inet::Coord &positionEci2) const;
+
+    /** @brief calculate the elevation of a point relative to a point
+     *  given both in ECI coordinates. THe function automatically choose the
+     *  point with lower elevation as ground point
+     *  @param latitude1 of first geocentric point
+     *  @param longitude1 of first geocentric point
+     *  @param altitude1 of first geocentric point
+     *  @param latitude2 of second geocentric point
+     *  @param longitude2 of second geocentric point
+     *  @param altitude2 of second geocentric point
+     *  @return elevation angle between the given geocentric points
+     */
+    inetu::deg calculateElevation(const inetu::deg &lat1,
+            const inetu::deg &long1, const inetu::m &alt1,
+            const inetu::deg &lat2, const inetu::deg &long2,
+            const inetu::m &alt2) const;
 
 private:
 

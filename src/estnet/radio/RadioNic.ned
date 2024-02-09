@@ -34,7 +34,7 @@ module RadioNic extends InterfaceEntry like IWirelessInterface
         @display("i=block/ifcard;bgb=214,335;bgl=53");
         // so we don't need to define it for the mac and radio module separately
         double bitrate @unit(bps);
-        string macType = default("IdealMacQueue");		// type of MAC layer protocol
+        string macType = default("IdealMacExtraStatistics");		// type of MAC layer protocol
         string radioType = default("UnitDiskRadio");	// type of Radio
         **.bitrate = default(bitrate);
         string interfaceTableModule = default(absPath(".interfaceTable")); // path to interface table module

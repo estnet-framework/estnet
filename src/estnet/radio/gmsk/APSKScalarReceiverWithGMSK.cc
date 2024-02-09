@@ -18,14 +18,15 @@
 
 #include "APSKScalarReceiverWithGMSK.h"
 
-#include "estnet/noise/DirectionalScalarBackgroundNoise.h"
+#include <inet/physicallayer/apskradio/packetlevel/ApskScalarReceiver.h>
+#include <inet/physicallayer/apskradio/packetlevel/ApskScalarTransmission.h>
+#include <inet/physicallayer/common/packetlevel/BandListening.h>
+#include <inet/physicallayer/backgroundnoise/IsotropicScalarBackgroundNoise.h>
+#include <inet/physicallayer/analogmodel/packetlevel/ScalarNoise.h>
+
+#include "estnet/physicallayer/noise/DirectionalScalarBackgroundNoise.h"
 #include "GMSKModulation.h"
 
-#include "inet/physicallayer/apskradio/packetlevel/ApskScalarReceiver.h"
-#include "inet/physicallayer/apskradio/packetlevel/ApskScalarTransmission.h"
-#include "inet/physicallayer/common/packetlevel/BandListening.h"
-#include "inet/physicallayer/backgroundnoise/IsotropicScalarBackgroundNoise.h"
-#include "inet/physicallayer/analogmodel/packetlevel/ScalarNoise.h"
 
 namespace estnet {
 
@@ -66,37 +67,5 @@ void APSKScalarReceiverWithGMSK::initialize(int stage) {
     }
 }
 
-bool APSKScalarReceiverWithGMSK::computeIsReceptionPossible(
-        const inet::physicallayer::IListening *listening,
-        const inet::physicallayer::ITransmission *transmission) const {
-    return inet::physicallayer::ApskScalarReceiver::computeIsReceptionPossible(
-            listening, transmission);
-}
-
-bool APSKScalarReceiverWithGMSK::computeIsReceptionPossible(
-        const inet::physicallayer::IListening *listening,
-        const inet::physicallayer::IReception *reception,
-        inet::physicallayer::IRadioSignal::SignalPart part) const {
-    //collecting data for statistics
-    /*const inet::physicallayer::ScalarNoise *noise = dynamic_cast<const inet::physicallayer::ScalarNoise *>(
-     dynamic_cast<DirectionalScalarBackgroundNoise* >(
-     this->getParentModule() // radio
-     ->getParentModule() // wland
-     ->getParentModule() // networkHost
-     ->getParentModule() // sat
-     ->getParentModule() // SpaceTerrestrialNetwork
-     ->getSubmodule("radioMedium")
-     ->getSubmodule("backgroundNoise"))
-     ->computeNoise(listening));
-
-     omnetpp::simtime_t startTime = noise->getStartTime();
-     omnetpp::simtime_t endTime = noise->getEndTime();
-     inet::units::values::W P_N = noise->computeMaxPower(startTime, endTime);
-
-     const_cast<APSKScalarReceiverWithGMSK *>(this)->emit(noisePower, P_N.get());*/
-
-    return inet::physicallayer::ApskScalarReceiver::computeIsReceptionPossible(
-            listening, reception, part);
-}
 
 }  // namespace estnet

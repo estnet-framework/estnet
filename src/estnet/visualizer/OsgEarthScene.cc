@@ -16,6 +16,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+#include "OsgEarthScene.h"
+
 #ifdef WITH_OSG
 #include <osg/PositionAttitudeTransform>
 #include <osgDB/ReadFile>
@@ -27,8 +29,6 @@
 
 #include "common/OsgUtils.h"
 #endif
-
-#include "OsgEarthScene.h"
 
 #include "estnet/global_config.h"
 

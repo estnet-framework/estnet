@@ -27,6 +27,13 @@
 
 namespace estnet {
 
+/**
+ * This antenna is used for contact plan creation
+ * It makes use of the ini file property so that when mentioned
+ * before the normally used antenna, it transfers the belonging
+ * gain parameter (refering to the gain for optimal pointing) into
+ * a omnidirectional like antenna
+ */
 class ESTNET_API OmnidirectionalAntennaCpr: public inet::physicallayer::ConstantGainAntenna {
 protected:
     /** @brief initialization method */

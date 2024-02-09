@@ -19,7 +19,7 @@
 #ifndef NODES_ERRORMODEL_H_
 #define NODES_ERRORMODEL_H_
 
-#include "inet/physicallayer/contract/packetlevel/IRadio.h"
+#include <inet/physicallayer/contract/packetlevel/IRadio.h>
 
 #include "estnet/node/satellite/Satellite.h"
 #include "estnet/siminterface/pubsub/SimplePublisher.h"
@@ -43,13 +43,14 @@ protected:
     virtual void handleMessage(cMessage *msg);
 
 private:
-    cMessage *failure;
-    cMessage *repaired;
-    cMessage *check_timer;
-    double MTTF, MTTR;
-    int checkIntervall;
-    int faultSeed;
-    Satellite *node;
+    cMessage *_failure;
+    cMessage *_repaired;
+    cMessage *_check_timer;
+    double _MTTF, _MTTR;
+    int _checkIntervall;
+    int _faultSeed;
+    Satellite *_node;
+    std::string _msgKey;
     static omnetpp::simsignal_t nodeFailed;
 
 };

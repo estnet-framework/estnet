@@ -25,8 +25,7 @@ Define_Module(ApskScalarReceiverCpr);
 void ApskScalarReceiverCpr::initialize(int stage) {
     ApskScalarReceiver::initialize(stage);
     // override the snirthreshold when creating the contact plan
-    if (stage == inet::INITSTAGE_LOCAL
-            && par("useCpCreationParameters").boolValue())
+    if (par("useCpCreationParameters").boolValue())
         snirThreshold = inet::math::dB2fraction(par("snirThresholdCpCreation"));
 }
 

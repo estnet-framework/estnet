@@ -44,10 +44,11 @@ protected:
     double modelScale;
     std::string orbitColor;
     double orbitResolution;
-    double orbitUpdateFreq;
+    double orbitUpdateInterval;
     double orbitNextUpdate;
     std::string satConeColor;
-    double satConeScaling;
+    double coneHeight;
+    inetu::rad coneAngle;
     std::string coordBaseColorX;
     std::string coordBaseColorY;
     std::string coordBaseColorZ;

@@ -18,12 +18,14 @@
 
 #include "StaticTerrestrialMobility.h"
 
+#include <iostream>
+
+#include "inet/common/geometry/common/RotationMatrix.h"
+
 #include "estnet/environment/earthmodel/EarthModelFactory.h"
 #include "estnet/mobility/satellite/common/EulerAngleHelpers.h"
 #include "estnet/node/tracking/contract/INodeTracking.h"
-#include "inet/common/geometry/common/RotationMatrix.h"
 
-#include <iostream>
 
 namespace estnet {
 
@@ -36,8 +38,22 @@ omnetpp::simsignal_t StaticTerrestrialMobility::azEr = registerSignal(
         "azimuthError");
 omnetpp::simsignal_t StaticTerrestrialMobility::elEr = registerSignal(
         "elevationError");
-
+omnetpp::simsignal_t StaticTerrestrialMobility::positionUpdateX =
+  registerSignal("positionUpdateX");
+omnetpp::simsignal_t StaticTerrestrialMobility::positionUpdateY =
+  registerSignal("positionUpdateY");
+omnetpp::simsignal_t StaticTerrestrialMobility::positionUpdateZ =
+  registerSignal("positionUpdateZ");
+omnetpp::simsignal_t StaticTerrestrialMobility::velocityUpdateX =
+  registerSignal("velocityUpdateX");
+omnetpp::simsignal_t StaticTerrestrialMobility::velocityUpdateY =
+  registerSignal("velocityUpdateY");
+omnetpp::simsignal_t StaticTerrestrialMobility::velocityUpdateZ =
+  registerSignal("velocityUpdateZ");
+  
 void StaticTerrestrialMobility::initialize(int stage) {
+    IExtendedMobility::initialize(stage);
+
     if (stage == inet::INITSTAGE_LOCAL) {
         _orientation = inet::Quaternion::IDENTITY;
         // the omnet obstacle is a sphere, so we're gonna use a sphere for ground
@@ -62,6 +78,37 @@ void StaticTerrestrialMobility::initialize(int stage) {
 
 StaticTerrestrialMobility::~StaticTerrestrialMobility() {
     delete this->_earthModel;
+}
+
+void StaticTerrestrialMobility::getCurrentOrientationAngles(double &azimuth, double &elevation) {
+    // Constructs an East-Nord-Up (ENU) Cartesian coordinate system at the position of the ground station
+    inet::Coord east, north, up;
+
+    this->_earthModel->computeNadirCoordinateFrameFromECI(
+            GlobalJulianDate::getInstance().currentSimTime(),
+            getCurrentPosition(), east, north, up,
+            estnet::reference_system::ECI);
+    east.normalize();
+    north.normalize();
+    up.normalize();
+    double R[3][3] = { { east.x, east.y, east.z },
+            { north.x, north.y, north.z }, { up.x, up.y, up.z } };
+    inet::RotationMatrix rotM(R);
+    inet::Quaternion q = rotM.toQuaternion();
+
+    // Converts the current orientation from ECI to ENU
+    inet::Quaternion orientENU = q * _orientation;
+
+    inet::Coord pointing = orientENU.rotate(inet::Coord(1, 0, 0));
+
+    if (pointing.z > 1.0)
+        pointing.z = 1.0;
+    else if (pointing.z < -1.0)
+        pointing.z = -1.0;
+
+    // converts the rotation to azimuth and elevation
+    elevation = asin(pointing.z);
+    azimuth = -atan2(-pointing.x, pointing.y);
 }
 
 void StaticTerrestrialMobility::setCurrentAngularPosition(
@@ -142,12 +189,11 @@ void StaticTerrestrialMobility::setCurrentAngularPosition(
 
 }
 
-void StaticTerrestrialMobility::handleMessage(omnetpp::cMessage *msg) {
-}
-
 double StaticTerrestrialMobility::getMaxSpeed() const {
-    // TODO: Max speed calculation...
-    return 0.0;
+    // return maximum velocity possible for the given height
+    double r = alt.get() + WGS_84_RADIUS_EQUATOR;
+    double omega = EARTH_SPIN * M_PI / 180;
+    return r * omega;
 }
 
 inet::Coord StaticTerrestrialMobility::getPositionAtTime(double time) {
@@ -161,22 +207,34 @@ inet::Coord StaticTerrestrialMobility::getCurrentPosition() {
     inet::Coord pos;
     cJulian simTime = _jdGlobal->currentSimTime();
     _earthModel->convertLatLongHeightToECI(simTime, lat, lon, alt, pos);
+
+    this->emit(positionUpdateX, pos.x);
+    this->emit(positionUpdateY, pos.y);
+    this->emit(positionUpdateZ, pos.z);
+
     return pos;
 }
 
 inet::Coord StaticTerrestrialMobility::getCurrentVelocity() {
-    // TODO
-    return inet::Coord();
+    inet::Coord omega = inet::Coord(0, 0, EARTH_SPIN * M_PI / 180);
+    inet::Coord vel = omega % this->getCurrentPosition();
+    this->emit(velocityUpdateX, vel.x);
+    this->emit(velocityUpdateY, vel.y);
+    this->emit(velocityUpdateZ, vel.z);
+    return vel;
 }
 
 inet::Coord StaticTerrestrialMobility::getVelocityAtTime(double time) {
-    // TODO
-    return inet::Coord();
+    inet::Coord omega = inet::Coord(0, 0, EARTH_SPIN * M_PI / 180);
+
+    return omega % this->getPositionAtTime(time);
 }
 
 inet::Coord StaticTerrestrialMobility::getCurrentAcceleration() {
-    // TODO
-    return inet::Coord();
+    double v = this->getCurrentVelocity().length();
+    inet::Coord r = this->getCurrentPosition();
+    double omega = v/r.length();
+    return r * ((float)-pow(omega, 2));
 }
 
 inet::Quaternion StaticTerrestrialMobility::getCurrentAngularPosition() {
@@ -190,23 +248,26 @@ inet::Quaternion StaticTerrestrialMobility::getCurrentAngularPosition() {
 }
 
 inet::Quaternion StaticTerrestrialMobility::getCurrentAngularVelocity() {
-    // TODO: For Groundstations everytime in Satellite-Direction
+    // TODO
+    throw omnetpp::cRuntimeError("Computing the angular velocity of a ground station is currently not supported. "
+            "All calculations will be incorrect, that rely on this.");
     return inet::Quaternion::NIL;
 }
 
 inet::Quaternion StaticTerrestrialMobility::getCurrentAngularAcceleration() {
     // TODO
+    throw omnetpp::cRuntimeError("Computing the angular acceleration of a ground station is currently not supported. "
+                "All calculations will be incorrect, that rely on this.");
     return inet::Quaternion::NIL;
 }
 
 inet::Coord StaticTerrestrialMobility::getConstraintAreaMax() const {
-    // TODO: return true constraint area max
-    return inet::Coord();
+    double height = alt.get() + WGS_84_RADIUS_EQUATOR;
+    return inet::Coord(height, height, height);
 }
 
 inet::Coord StaticTerrestrialMobility::getConstraintAreaMin() const {
-    // TODO: return true constraint area min
-    return inet::Coord();
+    return inet::Coord(0, 0, 0);
 }
 
 }  // namespace estnet

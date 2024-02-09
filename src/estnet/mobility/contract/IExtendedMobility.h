@@ -29,7 +29,7 @@ namespace estnet {
 /** Extension to Inet's IMobility to allow accurate
  *  Visualization and simulation of orientation.
  */
-class ESTNET_API IExtendedMobility: public inet::IMobility {
+class ESTNET_API IExtendedMobility: public omnetpp::cSimpleModule, public inet::IMobility {
 public:
     IExtendedMobility();
     virtual ~IExtendedMobility();
@@ -50,15 +50,27 @@ public:
     virtual inet::Coord getPositionAtTime(double time) = 0;
 
 protected:
+    /** @brief update position in regular interval if selected */
+    virtual void handleMessage(omnetpp::cMessage *msg);
+    /** @brief initialize parameter of module */
+    virtual void initialize(int stage) override;
     /** @brief Returns the rotation matrix from ENU orientation to world */
     virtual void getEnuToWorldMatrix(cJulian time, const inet::Coord &p,
-            double matrix[3][3]);
+            M4x4d& matrix);
     /** @brief Returns the rotation matrix from world orientation to ENU */
     virtual void getWorldToEnuMatrix(cJulian time, const inet::Coord &p,
-            double matrix[3][3]);
+            M4x4d& matrix);
     const GlobalJulianDate *_jdGlobal;
+
+    bool _doAutoUpdate; ///< true, if the position and attitude should be updated
+                        /// in regular intervals (self-triggered)
+    double _selfUpdateIV_s; ///< if self-triggered updates are enabled, this
+                            /// defines the time interval between two successive
+    /// updates
 private:
     IEarthModel *_osgEarthModel;
+    omnetpp::cMessage *_updateTimer;
+
 
 };
 

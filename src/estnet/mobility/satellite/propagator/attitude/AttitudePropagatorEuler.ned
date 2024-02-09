@@ -32,6 +32,6 @@ simple AttitudePropagatorEuler like IAttitudePropagator
         // Minimal duration after which an propagation update is needed for this specific propagator
         // in SimTime seconds, e.g. the time duration for which the system states are assumed constant
         
-        double dSAccMin = default(10);
+        double dSAccMin @unit(rad) = default(0.001rad);
 		// Minimal accuracy for each component of the state vector above which a new propagation is triggered
 }

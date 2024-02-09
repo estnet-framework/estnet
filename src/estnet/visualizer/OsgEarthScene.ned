@@ -30,6 +30,6 @@ simple OsgEarthScene
         string coordBaseColorX = default("");   // defines the color of the x-axis: #ff0000ff
         string coordBaseColorY = default("");   // defines the color of the y-axis: #00ff00ff
         string coordBaseColorZ = default("");   // defines the color of the z-axis: #0000ffff
-        double coordBaseLength = default(1e7);  // defines the length of the coordinate axis
-        double coordBaseWidth = default(25);  	// defines the width of the coordiate axis
+        double coordBaseLength @unit(m) = default(1e7m);  // defines the length of the coordinate axis
+        double coordBaseWidth @unit(m) = default(25m);  	// defines the width of the coordiate axis
 }

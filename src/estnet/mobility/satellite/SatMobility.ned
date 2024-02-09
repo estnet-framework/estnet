@@ -18,7 +18,7 @@
 
 package estnet.mobility.satellite;
 
-import inet.mobility.contract.IMobility;
+import estnet.mobility.contract.IExtendedMobility;
 import estnet.mobility.satellite.contract.IAttitudePropagator;
 import estnet.mobility.satellite.contract.IPositionPropagator;
 
@@ -28,11 +28,24 @@ import estnet.mobility.satellite.contract.IPositionPropagator;
 // Internal updates are realized via attitude and position propagators.
 // External updates can occur asynchronous,e.g. from orekit or RODOS sources.
 //
-module SatMobility like IMobility
+module SatMobility like IExtendedMobility
 {
     parameters:
-        // signals...
+        // signals
         @signal[mobilityStateChanged];
+        @signal[positionUpdateX](type=double); // emitted on DEBUG only
+        @signal[positionUpdateY](type=double); // emitted on DEBUG only
+        @signal[positionUpdateZ](type=double); // emitted on DEBUG only
+        @signal[velocityUpdateX](type=double);
+        @signal[velocityUpdateY](type=double);
+        @signal[velocityUpdateZ](type=double);
+        // statistics
+        @statistic[eciPositionX](title="ECI position x"; source=positionUpdateX; record=vector; interpolationmode=none);
+        @statistic[eciPositionY](title="ECI position y"; source=positionUpdateY; record=vector; interpolationmode=none);
+        @statistic[eciPositionZ](title="ECI position z"; source=positionUpdateZ; record=vector; interpolationmode=none);
+        @statistic[eciVelocityX](title="ECI velocity x"; source=velocityUpdateX; record=vector; interpolationmode=none);
+        @statistic[eciVelocityY](title="ECI velocity y"; source=velocityUpdateY; record=vector; interpolationmode=none);
+        @statistic[eciVelocityZ](title="ECI velocity z"; source=velocityUpdateZ; record=vector; interpolationmode=none);
         // submodule type parameters
         string attitudePropagatorType = default("AttitudePropagatorQuaternion");  // NED type of the attitude propagator
         string positionPropagatorType = default("PositionPropagatorKepler"); // NED type of the position propagator

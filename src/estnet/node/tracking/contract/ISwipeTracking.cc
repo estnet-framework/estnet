@@ -59,7 +59,6 @@ void ISwipeTracking::handleMessage(cMessage *message) {
         if (startContact != nullptr) {
             this->scheduleAt(startContact->startTime, this->_swipeStart);
         }
-
     }
 }
 
@@ -90,8 +89,6 @@ void ISwipeTracking::updateTimeParameters() {
         _deltaT = _trackingTime - overflyingTime / 2;
 
         this->scheduleAt(stopContact->endTime, this->_swipeStop);
-    } else {
-        // todo: check for simtime end?
     }
 }
 

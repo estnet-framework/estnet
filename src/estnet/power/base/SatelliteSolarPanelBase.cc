@@ -45,13 +45,12 @@ void SatelliteSolarPanelBase::initialize(int stage) {
                     energySinkModule);
 
         //set panels orientation, using the antenna mobility
-        double roll = this->par("roll").doubleValue();
-        double pitch = this->par("pitch").doubleValue();
-        double yaw = this->par("yaw").doubleValue();
-        auto sat = omnetpp::check_and_cast<Satellite*>(
-                this->getParentModule()->getParentModule());
-        this->_mobility = new AntennaMobility(sat->getMobility(), yaw, pitch,
-                roll);
+//        double roll = this->par("roll").doubleValue();
+//        double pitch = this->par("pitch").doubleValue();
+//        double yaw = this->par("yaw").doubleValue();
+//        auto sat = omnetpp::check_and_cast<Satellite*>(
+//                this->getParentModule()->getParentModule());
+        this->_mobility = omnetpp::check_and_cast<OffsetMobility*>(getSubmodule("mobility"));
 
         // start message for power updating
         this->_checkTimer = new omnetpp::cMessage("checkPowerCreationTimer");

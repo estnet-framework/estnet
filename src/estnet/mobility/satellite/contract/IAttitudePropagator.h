@@ -195,13 +195,19 @@ public:
     virtual void getEulerAttitudeAtTime(cJulian const &targetTime,
     cEulerAngles &newEuler) override
     {
-        // TODO: check if we really need to compute new euler angle values, or if we
-        // use the last one in the cache...
+        //check cached euler values
+        std::map<cJulian, cEulerAngles>::const_iterator eulIt =
+                this->_computedEulAtt.find(targetTime);
+        if (eulIt != this->_computedEulAtt.end()) {
+            newEuler = eulIt->second;
+            return;
+        }
         tPropState_Ptr tmpPropStatePtr;
         PropagatorBase<tAttitudeState>::getState(targetTime, tmpPropStatePtr);
         tPropStateAttitude_Ptr tmpAttPtr = std::static_pointer_cast<
                 PropStateAttitude, PropState>(tmpPropStatePtr);
         tmpAttPtr->attitudeAsEulerAngles(newEuler);
+        this->_computedEulAtt.emplace(targetTime, newEuler);
     }
 
     /**
@@ -213,13 +219,19 @@ public:
     virtual void getQuaternionAttitudeAtTime(cJulian const &targetTime,
     cQuaternion &newQuaternion) override
     {
-        // TODO: check if we really need to compute new quaternion values, or if we
-        // use the last one in the cache...
+        //check cached quaternion values
+        std::map<cJulian, cQuaternion>::const_iterator quatIt =
+                this->_computedQuatAtt.find(targetTime);
+        if (quatIt != this->_computedQuatAtt.end()) {
+            newQuaternion = quatIt->second;
+            return;
+        }
         tPropState_Ptr tmpPropStatePtr;
         PropagatorBase<tAttitudeState>::getState(targetTime, tmpPropStatePtr);
         tPropStateAttitude_Ptr tmpAttPtr = std::static_pointer_cast<
                 PropStateAttitude, PropState>(tmpPropStatePtr);
         tmpAttPtr->attitudeAsQuaternion(newQuaternion);
+        this->_computedQuatAtt.emplace(targetTime, newQuaternion);
     }
 
     /**
@@ -232,13 +244,19 @@ public:
     virtual void getEulerAngularVelAtTime(cJulian const &targetTime,
     cEulerAngles &newEuler) override
     {
-        // TODO: check if we really need to compute new euler angle values, or if we
-        // use the last one in the cache...
+        //check cached euler values
+        std::map<cJulian, cEulerAngles>::const_iterator eulIt =
+                this->_computedEulVel.find(targetTime);
+        if (eulIt != this->_computedEulVel.end()) {
+            newEuler = eulIt->second;
+            return;
+        }
         tPropState_Ptr tmpStatePtr;
         PropagatorBase<tAttitudeState>::getState(targetTime, tmpStatePtr);
         tPropStateAttitude_Ptr tmpAttPtr = std::static_pointer_cast<
                 PropStateAttitude, PropState>(tmpStatePtr);
         tmpAttPtr->angularVelAsEulerAngles(newEuler);
+        this->_computedEulVel.emplace(targetTime, newEuler);
     }
 
     /**
@@ -250,13 +268,19 @@ public:
     virtual void getQuaternionAngularVelAtTime(cJulian const &targetTime,
     cQuaternion &newQuaternion) override
     {
-        // TODO: check if we really need to compute new quaternion values, or if we
-        // use the last one in the cache...
+        //check cached quaternion values
+        std::map<cJulian, cQuaternion>::const_iterator quatIt =
+                this->_computedQuatVel.find(targetTime);
+        if (quatIt != this->_computedQuatVel.end()) {
+            newQuaternion = quatIt->second;
+            return;
+        }
         tPropState_Ptr tmpStatePtr;
         PropagatorBase<tAttitudeState>::getState(targetTime, tmpStatePtr);
         tPropStateAttitude_Ptr tmpAttPtr = std::static_pointer_cast<
                 PropStateAttitude, PropState>(tmpStatePtr);
         tmpAttPtr->angularVelAsQuaternion(newQuaternion);
+        this->_computedQuatVel.emplace(targetTime, newQuaternion);
     }
 
     /**
@@ -269,13 +293,19 @@ public:
     virtual void getEulerAngularAccAtTime(cJulian const &targetTime,
     cEulerAngles &newEuler) override
     {
-        // TODO: check if we really need to compute new euler angle values, or if we
-        // use the last one in the cache...
+        //check cached euler values
+        std::map<cJulian, cEulerAngles>::const_iterator eulIt =
+                this->_computedEulAcc.find(targetTime);
+        if (eulIt != this->_computedEulAcc.end()) {
+            newEuler = eulIt->second;
+            return;
+        }
         tPropState_Ptr tmpStatePtr;
         PropagatorBase<tAttitudeState>::getState(targetTime, tmpStatePtr);
         tPropStateAttitude_Ptr tmpAttPtr = std::static_pointer_cast<
                 PropStateAttitude, PropState>(tmpStatePtr);
         tmpAttPtr->angularAccAsEulerAngles(newEuler);
+        this->_computedEulAcc.emplace(targetTime, newEuler);
     }
 
     /**
@@ -287,14 +317,29 @@ public:
     virtual void getQuaternionAngularAccAtTime(cJulian const &targetTime,
     cQuaternion &newQuaternion) override
     {
-        // TODO: check if we really need to compute new quaternion values, or if we
-        // use the last one in the cache...
+        //check cached quaternion values
+        std::map<cJulian, cQuaternion>::const_iterator quatIt =
+                this->_computedQuatAcc.find(targetTime);
+        if (quatIt != this->_computedQuatAcc.end()) {
+            newQuaternion = quatIt->second;
+            return;
+        }
+        // Calculate new state and save it to cache
         tPropState_Ptr tmpStatePtr;
         PropagatorBase<tAttitudeState>::getState(targetTime, tmpStatePtr);
         tPropStateAttitude_Ptr tmpAttPtr = std::static_pointer_cast<
                 PropStateAttitude, PropState>(tmpStatePtr);
         tmpAttPtr->angularAccAsQuaternion(newQuaternion);
+        this->_computedQuatAcc.emplace(targetTime, newQuaternion);
     }
+
+private:
+    std::map<cJulian, cQuaternion> _computedQuatAtt;
+    std::map<cJulian, cQuaternion> _computedQuatVel;
+    std::map<cJulian, cQuaternion> _computedQuatAcc;
+    std::map<cJulian, cEulerAngles> _computedEulAtt;
+    std::map<cJulian, cEulerAngles> _computedEulVel;
+    std::map<cJulian, cEulerAngles> _computedEulAcc;
 };
 
 }  // namespace estnet

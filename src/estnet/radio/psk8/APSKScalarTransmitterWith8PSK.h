@@ -20,6 +20,7 @@
 #define __UTILS_APSK_SCALAR_TRANSMITTER_WITH_8PSK_H__
 
 #include <inet/physicallayer/apskradio/packetlevel/ApskScalarTransmitter.h>
+
 #include "estnet/common/ESTNETDefs.h"
 
 namespace estnet {
@@ -28,6 +29,10 @@ namespace estnet {
  * APSKScalarTransmitter with support for 8PSK modulation
  */
 class ESTNET_API APSKScalarTransmitterWith8PSK: public inet::physicallayer::ApskScalarTransmitter {
+    /**
+     * Overrides initialization of ApskScalarTransmitter, as it does not allow
+     * other modulations
+     */
     virtual void initialize(int stage) override;
 };
 

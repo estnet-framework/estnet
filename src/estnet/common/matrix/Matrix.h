@@ -20,7 +20,7 @@
 
 namespace estnet {
 
-// shortcuts for common mtrix types
+// shortcuts for common matrix types
 typedef Eigen::Matrix<double, 4, 4> M4x4d;
 typedef Eigen::Matrix<double, 3, 3> M3x3d;
 

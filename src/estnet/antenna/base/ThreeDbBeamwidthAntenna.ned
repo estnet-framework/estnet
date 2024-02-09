@@ -18,15 +18,17 @@
 
 package estnet.antenna.base;
 
+import inet.physicallayer.base.packetlevel.AntennaBase;
+
 //
 // Base model for an antenna that can
-// be modeled with an 3dB beamwidth
+// be modeled with an 3dB beam width
 //
-module ThreeDbBeamwidthAntenna extends AntennaBaseWithOrientation
+module ThreeDbBeamwidthAntenna extends AntennaBase
 {
     parameters:
         double maxGain @unit(dB);    // maximum gain of the antenna radiation pattern
         double minGain @unit(dB);    // minimum gain of the antenna
-        double beamWidth @unit(deg); // 3dB beamwidth
+        double beamWidth @unit(deg); // 3dB beam width
         @class(ThreeDbBeamwidthAntenna);
 }

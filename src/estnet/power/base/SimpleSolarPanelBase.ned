@@ -20,6 +20,7 @@ package estnet.power.base;
 
 import inet.power.base.EpEnergyGeneratorBase;
 import estnet.power.contract.ISolarPanel;
+import estnet.mobility.base.OffsetMobility;
 
 
 //
@@ -30,7 +31,7 @@ import estnet.power.contract.ISolarPanel;
 // The orientation is modeled by an offset to the satellite frame
 // with yaw-pitch-roll angles.d
 //
-simple SolarPanelBase extends EpEnergyGeneratorBase like ISolarPanel
+module SolarPanelBase extends EpEnergyGeneratorBase like ISolarPanel
 {
     parameters:
         string energySinkModule = default("^.battery"); // module path of energy sink
@@ -45,4 +46,13 @@ simple SolarPanelBase extends EpEnergyGeneratorBase like ISolarPanel
         double roll @unit(deg) = default(0deg);	// roll angle; orientation to satellites base frame, z-axis is normal vector to panel plane
 
         @class(SolarPanelBase);
+        
+ 	submodules:
+ 	    mobility : OffsetMobility {
+ 	        parameters:
+ 	            yaw = yaw;
+ 	            pitch = pitch;
+ 	            roll = roll;
+ 	            parentMobility = default("^.^.^.networkHost.mobility");
+ 	    }
 }

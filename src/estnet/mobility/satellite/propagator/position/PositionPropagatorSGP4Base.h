@@ -36,7 +36,7 @@ namespace estnet {
 class ESTNET_API PositionPropagatorSGP4Base: public omnetpp::cSimpleModule,
         public PositionPropagator<PropStateECI> {
 private:
-    ///< returns position[m] and velocity [m/s] at given time
+    // returns position[m] and velocity [m/s] at given time
     cEci GetState(cJulian const &targetTime) const;
 
     std::string _firstLine;

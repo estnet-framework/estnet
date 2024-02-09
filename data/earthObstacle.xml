@@ -1,0 +1,4 @@
+<environment>
+	<shape id="1" type="sphere" radius="6378137"/>
+    <object position="center 0 0 0" orientation="0 0 0" shape="1" material="concrete" fill-color="203 65 84" opacity="0.8"/>
+</environment>

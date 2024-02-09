@@ -54,8 +54,18 @@ void TargetTrackingConsumer::initialize(int stage) {
         this->_changeStatus = new cMessage("switchStatus");
         scheduleAt(SimTime(0, SIMTIME_S), this->_changeStatus);
     } else if (stage == 6) {
+        // power initializing
         _energyConsumer->addStateHandler(this);
         this->updatePowerConsumption();
+
+        //save current target, in order to switch back to it after tracking
+        AttitudeController *att =
+                check_and_cast<AttitudeController*>(
+                        (this->getModuleByPath(
+                                par("pathToEnergyModule").stringValue()))->getParentModule()->getModuleByPath(
+                                ".attitudeController"));
+        att->getCurrentTarget(_lastTarget);
+
     }
 
 }
@@ -77,7 +87,7 @@ void TargetTrackingConsumer::handleMessage(cMessage *msg) {
 
         //calculate elevation to target point
         inetu::deg elevation = this->_earthModel->calculateElevation(
-                coordinates, _latitude, _longitude);
+                coordinates, _latitude, _longitude, inetu::m(0));
 
         //if elevation is negative, schedule in 60s, otherwise schedule in 1s
         if (elevation >= (this->_minElevation - inetu::deg(5))) {
@@ -120,7 +130,10 @@ void TargetTrackingConsumer::updateTracking() {
                             par("pathToEnergyModule").stringValue()))->getParentModule()->getModuleByPath(
                             ".attitudeController"));
     if (this->_on) {
-        //save target as attitude target
+        //save current target, in order to switch back to it after tracking
+        att->getCurrentTarget(_lastTarget);
+
+        // start target tracking
         inet::Coord point = inet::Coord();
         this->_earthModel->convertLatLongHeightToECI(
                 GlobalJulianDate::getInstance().currentSimTime(),
@@ -128,7 +141,7 @@ void TargetTrackingConsumer::updateTracking() {
         _target = AttitudeTarget(point);
         att->changeTarget(_target);
     } else {
-        att->changeTarget(*(new AttitudeTarget("NIL")));
+        att->changeTarget(_lastTarget);
     }
 }
 

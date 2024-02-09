@@ -25,7 +25,8 @@
 
 namespace estnet {
 
-/** Represents a satellite node in the simulation
+/**
+ * Represents a satellite node in the simulation
  */
 class ESTNET_API Satellite: public NodeBase {
 protected:
@@ -39,6 +40,12 @@ protected:
 public:
     AttitudeController *attCon;
     double contactTrackingUpdateTime;
+    /**
+     * Get information about whether the alignment check is enabled
+     * This information is required to set the satellite into pointing
+     * mode to other nodes
+     * @return bool: true if alignment check is enabled
+     */
     virtual bool getAlignmentCheckEnable();
     /** @brief returns the nodes mobility */
     virtual IExtendedMobility* getMobility() const override;

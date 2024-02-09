@@ -27,7 +27,7 @@ import estnet.application.base.BasicApp;
 simple PositionBasedApp extends BasicApp
 {
     parameters:
-        volatile double basicDataInterval = default(1);					// Packets are send with a time delay of basicDataInterval/multiplier
+        volatile double basicDataInterval @unit(s) = default(1s);		// Packets are send with a time delay of basicDataInterval/multiplier
         volatile double idleInterval @unit(s) = default(1s);			// Interval for checks if new data is available if multiplier is 0
         volatile double beamWidth @units(deg) = default(20);			// Beamwidth of the antenna used to receive data from ground; is ignored if maxFOV = ture
         volatile bool maxFOV = default(true);							// Uses the maximal possible FOV of the satellite as beam width

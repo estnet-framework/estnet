@@ -19,10 +19,11 @@
 #ifndef SATMOBILITY_PROPAGATORS_POSITION_IPOSITIONPROPAGATOR_H_
 #define SATMOBILITY_PROPAGATORS_POSITION_IPOSITIONPROPAGATOR_H_
 
+#include <memory>
+
 #include "IPropagatorBase.h"
 #include "estnet/mobility/satellite/propagator/position/state/PropStatePosition.h"
 #include "estnet/common/StlUtils.h"
-#include <memory>
 
 namespace estnet {
 
@@ -95,21 +96,18 @@ public:
      */
     virtual void getECIAtTime(cJulian const &targetTime, cEci &newECI) override
     {
+        //check cached eci values
         std::map<cJulian, cEci>::const_iterator eciIt =
                 this->_computedEcis.find(targetTime);
         if (eciIt != this->_computedEcis.end()) {
             newECI = eciIt->second;
             return;
         }
-        // TODO: check if we really need to compute new ECI values, or if we use the
-        // last one in the cache...
-        // state_type *tmpState = new state_type();
+        // Calculate new state and save it to cache
         tPropState_Ptr tmpStatePtr;
         PropagatorBase<tPositionState>::getState(targetTime, tmpStatePtr);
         tPropStatePosition_Ptr tmpPosPtr = std::static_pointer_cast<
                 PropStatePosition, PropState>(tmpStatePtr);
-        // std::cout << "tmpPosPtr->getTimeStamp().toGMST()="<<
-        // tmpPosPtr->getTimeStamp().toGMST() << std::endl;
         tmpPosPtr->asECI(newECI);
         this->_computedEcis.emplace(targetTime, newECI);
     }

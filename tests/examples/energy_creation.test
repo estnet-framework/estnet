@@ -1,0 +1,55 @@
+%description:
+Test energy creation model example
+
+%extraargs: -c SolarPanels
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/powermodel/omnetpp.ini
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.solarpanel[0] powerGeneration:mean 0.0001689512663481
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.solarpanel[1] powerGeneration:mean 0.00019479068272813
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.solarpanel[2] powerGeneration:mean 0.00019167818612798
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.solarpanel[3] powerGeneration:mean 0.00019333679557461
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.solarpanel[4] powerGeneration:mean 1.7931622255518
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.solarpanel[5] powerGeneration:mean 0
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.battery powerGeneration:mean 1.792417028535
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].energyModule.battery residualEnergyCapacity:mean 14759.857994034
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.solarpanel[0] powerGeneration:mean 1.7676037680843
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.solarpanel[1] powerGeneration:mean 1.784778896123
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.solarpanel[2] powerGeneration:mean 1.553359045608
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.solarpanel[3] powerGeneration:mean 1.7592933878535
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.solarpanel[4] powerGeneration:mean 0.075359760060166
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.solarpanel[5] powerGeneration:mean 0.071970070520498
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.battery powerGeneration:mean 7.0077391618838
+
+%contains: results/SolarPanels-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].energyModule.battery residualEnergyCapacity:mean 18300.778254027

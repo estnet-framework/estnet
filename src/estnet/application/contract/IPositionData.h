@@ -23,6 +23,10 @@
 
 namespace estnet {
 
+/**
+ *  Interface to provide data for the PositionBasedApp. The data is either accessed with a single
+ *  point or a cone.
+ */
 class ESTNET_API IPositionData {
 public:
     /** @brief gets the multiplier for on point*/

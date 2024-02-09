@@ -34,14 +34,11 @@ module ContactPlanCreatingRadioMedium extends RadioMedium
         // satellite contacts are only checked in one directions
         // and automatically assumed to be bidirectional
         bool assumeBidirectionalSatContacts = default(false);  // whether satellite contact are considered bidirectional
-        bool considerAddedInterferences = default(true);	// whetheradded interference should be considered
+        bool considerAddedInterferences = default(true);	// whether added interference should be considered
         bool buildInterferencePlan = default(true);	// whether an interference plan should be created
-        // not used, realRadioMedium decides what to use, but needed to be created properly
-        propagation.typename = default("ConstantSpeedPropagation");
-        pathLoss.typename = default("FreeSpacePathLoss");
-        analogModel.typename = default("ScalarAnalogModel");
-        backgroundNoise.typename = default("IsotropicScalarBackgroundNoise");
-        backgroundNoise.power = default(-194dBm);
+        bool checkUplinks = default(true); // whether added uplinks should be considered
+        bool checkDownlinks = default(true); // whether added downlinks should be considered
+        bool checkISL = default(true); // whether added inter satellite links should be considered
 
         @class(ContactPlanCreatingRadioMedium);
 }

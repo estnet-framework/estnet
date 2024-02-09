@@ -1,0 +1,27 @@
+%description:
+Test datageneration BasicApp example
+
+%extraargs: -c BasicApp
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/datageneration/omnetpp.ini
+
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.cg[0].networkHost.appWrapper[0].app rcvdPk:count 0
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.cg[0].networkHost.appWrapper[1].app rcvdPk:count 45
+
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].networkHost.appWrapper[0].app rcvdPk:count 30
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].networkHost.appWrapper[1].app rcvdPk:count 0
+
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].networkHost.appWrapper[0].app rcvdPk:count 60
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.sat[1].networkHost.appWrapper[1].app rcvdPk:count 0
+
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.sat[2].networkHost.appWrapper[0].app rcvdPk:count 30
+%contains: results/BasicApp-#0.sca
+scalar SpaceTerrestrialNetwork.sat[2].networkHost.appWrapper[1].app rcvdPk:count 0

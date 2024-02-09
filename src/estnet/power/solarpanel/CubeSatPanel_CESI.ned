@@ -23,10 +23,10 @@ import estnet.power.base.SatelliteSolarPanelBase;
 //
 // Solar Panel configuration for CubeSat side based on CESI CTJ-LC-SCA
 //
-simple CubeSatPanel_CESI extends SatelliteSolarPanelBase
+module CubeSatPanel_CESI extends SatelliteSolarPanelBase
 {
     parameters:
-        cellSize = 0.00265;  // panel size in m^2
+        cellSize = 0.00265sqrm;  // panel size in m^2
         efficiency = 0.275;	// power retrieve efficiency of solar cells
         numSolarCells = default(2);		// number of cells of the panel, default is for 1U
 

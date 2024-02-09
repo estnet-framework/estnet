@@ -23,7 +23,11 @@ package estnet.antenna.contactplan;
 import inet.physicallayer.base.packetlevel.AntennaBase;
 
 //
-// Isotropic Antenna with a Gain parameter, used for contact plan creation
+// Isotropic Antenna with a gain parameter, used for contact plan creation:
+// It makes use of the ini file property so that when mentioned
+// before the normally used antenna, it transfers the belonging 
+// gain parameter (refering to the gain for optimal pointing) into
+// a omnidirectional like antenna that can be used for cp creation.
 //
 module OmnidirectionalAntennaCpr extends AntennaBase
 {

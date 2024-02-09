@@ -32,5 +32,5 @@ simple PositionPropagatorSGP4File like IPositionPropagator
         // which is retrieved from the parentModules parameter "nodeNo".
         string tleFile;
         // Minimal accuracy for each component of the state vector above which a new propagation is triggered
-        double dSAccMin = default(0.1);
+        double dSAccMin @unit(m) = default(0.1m);
 }

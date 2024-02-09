@@ -17,10 +17,12 @@
 //
 
 #include "ContactPlanCreatingApp.h"
+
+#include <inet/linklayer/common/MacAddressTag_m.h>
+#include <inet/common/packet/Packet.h>
+
 #include "estnet/common/AddressUtils.h"
 
-#include "inet/linklayer/common/MacAddressTag_m.h"
-#include <inet/common/packet/Packet.h>
 
 namespace estnet {
 

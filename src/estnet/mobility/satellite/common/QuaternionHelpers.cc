@@ -37,6 +37,33 @@ void quaternionToMatrix(inet::Quaternion q, double R[3][3]) {
     R[2][2] = 2 * q.s * q.s - 1 + 2 * q.v.z * q.v.z;
 }
 
+void quaternionToMatrix(inet::Quaternion q, M4x4d& R) {
+    // column1
+    R(0, 0) = 2 * q.s * q.s - 1 + 2 * q.v.x * q.v.x;
+    R(1, 0) = 2 * q.v.y * q.v.x + 2 * q.s * q.v.z;
+    R(2, 0) = 2 * q.v.z * q.v.x - 2 * q.s * q.v.y;
+    R(3, 0) = 0;
+
+    // column 2
+    R(0, 1) = 2 * q.v.y * q.v.x - 2 * q.s * q.v.z;
+    R(1, 1) = 2 * q.s * q.s - 1 + 2 * q.v.y * q.v.y;
+    R(2, 1) = 2 * q.v.y * q.v.z + 2 * q.s * q.v.x;
+    R(3, 1) = 0;
+
+    // column 3
+    R(0, 2) = 2 * q.v.z * q.v.x + 2 * q.s * q.v.y;
+    R(1, 2) = 2 * q.v.y * q.v.z - 2 * q.s * q.v.x;
+    R(2, 2) = 2 * q.s * q.s - 1 + 2 * q.v.z * q.v.z;
+    R(3, 2) = 0;
+
+    // column 4
+    R(0, 3) = 0;
+    R(1, 3) = 0;
+    R(2, 3) = 0;
+    R(3, 3) = 1;
+
+}
+
 double getQuaternionValueAt(inet::Quaternion &q, unsigned int i) {
     switch (i) {
     case 0:
@@ -86,9 +113,8 @@ double getAlignmentAngle(inet::Quaternion orientation, inet::Coord position,
 
     inet::Coord connectingVector = targetPosition - position;
     connectingVector.normalize();
-
-    double angle = acos(
-            orientation.rotate(inet::Coord::X_AXIS) * connectingVector);
+    double product = std::min(1.0, std::max(-1.0, (double)(orientation.rotate(inet::Coord::X_AXIS) * connectingVector)));
+    double angle = acos(product);
 
     return angle;
 }

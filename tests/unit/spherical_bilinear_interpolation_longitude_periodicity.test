@@ -1,0 +1,42 @@
+%description:
+Test interpolation
+
+%file: noise_map_demodata.csv
+# min_lat max_lat lon_period lon_offset N_lat N_lon multiplier
+-1.0 0.5 5.0 2.0 4 3 1.0
+# values
+8.0 0.0 0.0
+1.0 2.0 3.0
+4.0 8.0 9.0
+1.0 2.0 3.0
+
+%includes:
+#include <estnet/common/interpolation/SphericalBilinearInterpolation.h>
+
+%global
+bool check_close(double a, double b, double tolerance)
+{
+	return std::abs(a - b) < tolerance;
+}
+
+%activity:
+SphericalBilinearInterpolation sbi("noise_map_demodata.csv");
+
+for (const auto lat : std::initializer_list<double>{-2, -1, -.0293, 0.499})
+{
+    for (const auto lon : std::initializer_list<double>{0.0, 1.234, 2.0, 3.456, 4.972})
+    {
+		double f = sbi.get(lat, lon);
+		for (double lon_offset = -10; lon_offset < 11; lon_offset += 5)
+		{
+			double i = sbi.get(lat, lon + lon_offset);
+			if (!check_close(i, f, 1e-10))
+			{
+				printf("TEST FAILED: lat: %.4f lon: %.4f | expected: %.10f, got %.10f\n", lat, lon + lon_offset, f, i);
+			}
+		}
+    }
+}
+
+%not-contains: stdout
+TEST FAILED

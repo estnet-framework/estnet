@@ -58,6 +58,11 @@ public:
     /** @brief function only called when the contactplan tracking is used */
     virtual void enableContactPlanTracking();
 
+    /**
+     * get all nodes that can be tracked at the current simulation time
+     *
+     * @return set<unsigned int>: A set of node IDs that are in tracking range
+     */
     std::set<unsigned int> nodesAvailableToBeTracked();
 };
 

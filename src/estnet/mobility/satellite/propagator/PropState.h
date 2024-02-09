@@ -21,6 +21,7 @@
 
 #include <omnetpp.h>
 #include <memory> // std::shared_ptr
+
 #include "estnet/common/time/GlobalJulianDate.h"
 
 namespace estnet {

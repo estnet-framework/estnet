@@ -30,7 +30,7 @@ simple NodeFailureModel like Publisher
     parameters:
         bool enable = default(true);	// if node failure should be enabled or not
         int faultSeed = default(0);		// random seed for failures
-        int checkIntervall = default(60);	// intervall at which should be check if a new failure occures
+        int checkIntervall @unit(s) = default(60s);	// intervall at which should be check if a new failure occures
         double MTTF @unit(s);	// mean time to failure; mean value at which a failure can occure
         double MTTR @unit(s);	// mean time to rapair; mean value at which a failure gets repaired
 

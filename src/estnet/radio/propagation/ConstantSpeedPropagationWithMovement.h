@@ -29,6 +29,11 @@ using namespace physicallayer;
 
 namespace estnet {
 
+/**
+ * Implements a propagation that allows to take into account movements of the nodes
+ * This is crucial for satellites, as fast velocities may result into
+ * weird behavior otherwise
+ */
 class ESTNET_API ConstantSpeedPropagationWithMovement: public ConstantSpeedPropagation {
 protected:
     bool ignoreMovementDuringTransmission;
@@ -36,12 +41,31 @@ protected:
     bool ignoreMovementDuringReception;
 
 protected:
+    /**
+     * Module initialization, that read decision in NED parameter, whether to use
+     * or ignore movements
+     * @param stage: current stage of initialization
+     */
     virtual void initialize(int stage) override;
+
+    /**
+     * Computes the position of the node at arrival of the transmitted signal
+     * @param startTime: start time of transmission
+     * @param startPosition: start position of transmitting node
+     * @param mobility: mobility of receiving node
+     * @return Coord: position of receiving node at arrival
+     *
+     */
     virtual const Coord computeArrivalPosition(const simtime_t startTime,
             const Coord startPosition, IMobility *mobility) const override;
 
 public:
-
+    /**
+     * Computes a arrival of a transmission at a receiving node
+     * @param transmission: transmitted signal/packet
+     * @param mobility: mobility of receiving node
+     * @return IArrival: arrival of transmitted signal
+     */
     virtual const IArrival* computeArrival(const ITransmission *transmission,
             IMobility *mobility) const override;
 };

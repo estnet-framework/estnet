@@ -38,7 +38,16 @@ namespace estnet {
  **/
 class ESTNET_API SimplePublisher: public cSimpleModule {
 protected:
+    /**
+     * Initialization of module
+     */
     virtual void initialize() override;
+
+    /**
+     * Function that publishes the value to the subscribers
+     * @param value: the concrete value that is published to the topic
+     * @param key: the topic name on which the value is published
+     */
     virtual void publishValue(tPubSubValue value, tPubSubKey key);
     simsignal_t _valueSigId;
 };

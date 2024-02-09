@@ -46,11 +46,35 @@ private:
 public:
     /**
      * calculate if the coordinates given are within the jamming elevation
+     * @param coordinates: given ECI coordinates of the object, for which the
+     * elevation is calculated and compared to the given threshold
+     * @return bool: returns true, when the object at the given coordinate is
+     *         in elevation range
      */
     bool isInJammingRange(inet::Coord &coordinates);
+
+    /**
+     * Returns the propability of jamming the node, when the node is in elevation
+     * range
+     * @return double: propability in range of 0.0 to 1.0
+     */
     double getProbability();
+
+    /**
+     * Multi-stage initialization of module
+     */
     virtual void initialize(int stage);
+
+    /**
+     * Access to the center frequency of the jammed spectrum
+     * @return Hz: center frequency of jammed spectrum in Hertz
+     */
     inetu::Hz getCenterFrequency();
+
+    /**
+     * Access to the jammed bandwidth
+     * @return Hz: Bandwidth in Hertz
+     */
     inetu::Hz getBandwidth();
 };
 

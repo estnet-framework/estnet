@@ -1,0 +1,26 @@
+%description:
+Test a simple value lookup
+
+%file: noise_map_demodata.csv
+# min_lat max_lat lon_period lon_offset N_lat N_lon multiplier
+-1.0 0.5 5.0 2.0 4 3 1.0
+# values
+8.0 0.0 0.0
+1.0 2.0 3.0
+4.0 8.0 9.0
+1.0 2.0 3.0
+
+%includes:
+#include <estnet/common/interpolation/SphericalBilinearInterpolation.h>
+
+%activity:
+SphericalBilinearInterpolation sbi("noise_map_demodata.csv");
+
+printf("%.2f\n", sbi.get_value(0, 0));
+printf("%.2f\n", sbi.get_value(1, 0));
+printf("%.2f\n", sbi.get_value(1, 1));
+
+%contains: stdout
+8.00
+1.00
+2.00

@@ -88,9 +88,9 @@ inet::Quaternion ExponentialSwipeTracking::getNewOrientation() {
 void ExponentialSwipeTracking::initialize() {
     ISwipeTracking::initialize();
     _exponent = par("exponent");
-    if ((_exponent % 2) != 0) {
-        throw omnetpp::cRuntimeError("Exponent has to be a multiple of 2!");
-    }
+//    if ((_exponent % 2) != 0) {
+//        throw omnetpp::cRuntimeError("Exponent has to be a multiple of 2!");
+//    }
 
 }
 
@@ -99,7 +99,7 @@ double ExponentialSwipeTracking::applyScaling(double ratio) {
     if (ratio <= 0.5) {
         rtn = pow(2, _exponent - 1) * pow(ratio, _exponent);
     } else {
-        rtn = 1 - pow(2, _exponent - 1) * pow(1 - ratio, _exponent);
+        rtn = 1 - (pow(2, _exponent - 1) * pow((1-ratio), _exponent));
     }
     return rtn;
 }

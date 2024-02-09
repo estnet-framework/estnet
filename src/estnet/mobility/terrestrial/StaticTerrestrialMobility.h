@@ -19,11 +19,11 @@
 #ifndef SRC_SATMOBILITY_STATICTERRESTRIALMOBILITY_H_
 #define SRC_SATMOBILITY_STATICTERRESTRIALMOBILITY_H_
 
+#include <omnetpp.h>
+
 #include "estnet/mobility/contract/IExtendedMobility.h"
 #include "estnet/environment/contract/IEarthModel.h"
 #include "estnet/common/time/GlobalJulianDate.h"
-
-#include <omnetpp.h>
 
 namespace estnet {
 
@@ -32,8 +32,7 @@ namespace estnet {
  * calculation (earth roatation) for surface-fixed communication
  * devices (e.g. GroundStations) and 3D visualization in OSG
  */
-class ESTNET_API StaticTerrestrialMobility: public omnetpp::cModule,
-        public IExtendedMobility {
+class ESTNET_API StaticTerrestrialMobility: public IExtendedMobility {
 public:
     /** @brief Sets the attitude of the node to the given value */
     virtual void setCurrentAngularPosition(
@@ -48,6 +47,13 @@ public:
     virtual inet::Coord getPositionAtTime(double time);
 
     virtual inet::Coord getVelocityAtTime(double time);
+
+    /**
+     *  Computes the current azimuth and elevation angle
+     *  @param reference to the computed azimuth angle [rad]
+     *  @param reference to the computed elevation angle [rad]
+     */
+    virtual void getCurrentOrientationAngles(double &azimuth, double &elevation);
 
     /**
      * Virtual functions from IMobility superclass
@@ -93,8 +99,6 @@ protected:
     virtual ~StaticTerrestrialMobility();
     /** @brief called at initialization */
     virtual void initialize(int stage) override;
-    /** @brief unused */
-    virtual void handleMessage(omnetpp::cMessage *msg);
 
 private:
     inetu::deg lon;
@@ -108,6 +112,14 @@ private:
     static omnetpp::simsignal_t el;
     static omnetpp::simsignal_t azEr;
     static omnetpp::simsignal_t elEr;
+
+    static omnetpp::simsignal_t positionUpdateX;
+    static omnetpp::simsignal_t positionUpdateY;
+    static omnetpp::simsignal_t positionUpdateZ;
+
+    static omnetpp::simsignal_t velocityUpdateX;
+    static omnetpp::simsignal_t velocityUpdateY;
+    static omnetpp::simsignal_t velocityUpdateZ;
 
     inet::Quaternion _orientation;
     IEarthModel *_earthModel;

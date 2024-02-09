@@ -22,12 +22,11 @@
 #include "estnet/mobility/satellite/common/EulerAngleHelpers.h"
 #include "estnet/mobility/satellite/common/QuaternionHelpers.h"
 
-// TODO should not rely on osg matrix in here
-// TODO to much copying around between matrix arrays and matrix classes
 
 namespace estnet {
 
-IExtendedMobility::IExtendedMobility() {
+IExtendedMobility::IExtendedMobility(): _doAutoUpdate(
+        false), _selfUpdateIV_s(0.0){
     // osgearth uses WGS84 by default to calculate the ENU coordinate system, so
     // we'll do the same
     this->_osgEarthModel = EarthModelFactory::get(
@@ -39,26 +38,41 @@ IExtendedMobility::~IExtendedMobility() {
     delete this->_osgEarthModel;
 }
 
+void IExtendedMobility::handleMessage(omnetpp::cMessage *msg) {
+    if (msg == this->_updateTimer) {
+        this->getCurrentPosition();
+        this->getCurrentVelocity();
+        this->scheduleAt(omnetpp::simTime() + this->_selfUpdateIV_s,
+                this->_updateTimer);
+    }
+}
+
+void IExtendedMobility::initialize(int stage) {
+    // get parameters
+    if (stage == inet::INITSTAGE_LOCAL) {
+        _doAutoUpdate = par("enableSelfTrigger");
+         _selfUpdateIV_s = par("selfTriggerTimeIv").doubleValueInUnit("s");
+         if(_doAutoUpdate){
+             _updateTimer = new omnetpp::cMessage("StateUpdateTimer");
+             this->scheduleAt(this->_selfUpdateIV_s, this->_updateTimer);
+         }
+    }
+}
 M4x4d IExtendedMobility::getCurrentAngularPositionRelativeToENU(cJulian time,
         const inet::Coord &pos) {
     // we compute the matrix that reverses OSGs ENU coordinate frame to the world
     // corrdinate frame
-    double reverseEnuMatPtr[3][3];
-    this->getEnuToWorldMatrix(time, pos, reverseEnuMatPtr);
     M4x4d reverseEnuMat;
-    reverseEnuMat << reverseEnuMatPtr[0][0], reverseEnuMatPtr[0][1], reverseEnuMatPtr[0][2], 0.0, reverseEnuMatPtr[1][0], reverseEnuMatPtr[1][1], reverseEnuMatPtr[1][2], 0.0, reverseEnuMatPtr[2][0], reverseEnuMatPtr[2][1], reverseEnuMatPtr[2][2], 0.0, 0.0, 0.0, 0.0, 1.0;
-
-    double attitudeMatPtr[3][3];
-    quaternionToMatrix(this->getCurrentAngularPosition(), attitudeMatPtr);
+    this->getEnuToWorldMatrix(time, pos, reverseEnuMat);
 
     M4x4d attitudeMat;
-    attitudeMat << attitudeMatPtr[0][0], attitudeMatPtr[0][1], attitudeMatPtr[0][2], 0.0, attitudeMatPtr[1][0], attitudeMatPtr[1][1], attitudeMatPtr[1][2], 0.0, attitudeMatPtr[2][0], attitudeMatPtr[2][1], attitudeMatPtr[2][2], 0.0, 0.0, 0.0, 0.0, 1.0;
+    quaternionToMatrix(this->getCurrentAngularPosition(), attitudeMat);
 
     return (reverseEnuMat * attitudeMat).transpose(); // simulation attitude
 }
 
 void IExtendedMobility::getEnuToWorldMatrix(cJulian time, const inet::Coord &p,
-        double matrix[3][3]) {
+        M4x4d& matrix) {
 
     // we're reversing the ENU coordinate system osgEarth forces onto nodes in
     // geo-centric maps.
@@ -71,47 +85,32 @@ void IExtendedMobility::getEnuToWorldMatrix(cJulian time, const inet::Coord &p,
     //   calls EllipsoidModel::computeCoordinateFrame
     // - osg include/osg/CoordinateSystemNode:208 EllipsoidModel::computeCoordinateFrame
     //   calculates ENU coordinate frame based on lat/lon
-
     inet::Coord east, north, up;
-    inet::Coord x(1, 0, 0), y(0, 1, 0), z(0, 0, 1);
+
     this->_osgEarthModel->computeNadirCoordinateFrameFromECI(time, p, east,
             north, up);
 
     // we're saving the transposed matrix, which inverts the rotation into the ENU
     // coordinate system
-    matrix[0][0] = east.x;
-    matrix[0][1] = east.y;
-    matrix[0][2] = east.z;
-    matrix[1][0] = north.x;
-    matrix[1][1] = north.y;
-    matrix[1][2] = north.z;
-    matrix[2][0] = up.x;
-    matrix[2][1] = up.y;
-    matrix[2][2] = up.z;
+    matrix << east.x, east.y, east.z, 0.0, 
+        north.x, north.y, north.z, 0.0, 
+        up.x, up.y, up.z, 0.0, 
+        0.0, 0.0, 0.0, 1.0;
 }
 
 void IExtendedMobility::getWorldToEnuMatrix(cJulian time, const inet::Coord &p,
-        double matrix[3][3]) {
-    double enuToWorld[3][3];
-    this->getEnuToWorldMatrix(time, p, enuToWorld);
+        M4x4d& matrix) {
+    this->getEnuToWorldMatrix(time, p, matrix);
 
     // transposing to get inverse
-    matrix[0][0] = enuToWorld[0][0];
-    matrix[0][1] = enuToWorld[1][0];
-    matrix[0][2] = enuToWorld[2][0];
-    matrix[1][0] = enuToWorld[0][1];
-    matrix[1][1] = enuToWorld[1][1];
-    matrix[1][2] = enuToWorld[2][1];
-    matrix[2][0] = enuToWorld[0][2];
-    matrix[2][1] = enuToWorld[1][2];
-    matrix[2][2] = enuToWorld[2][2];
+    matrix.transpose();
 }
 
 inet::EulerAngles IExtendedMobility::getWorldToEnuAngles(cJulian time,
         const inet::Coord &p) {
     double yaw = 0, pitch = 0, roll = 0;
 
-    double R[3][3];
+    M4x4d R;
     this->getWorldToEnuMatrix(time, p, R);
 
     // grab the euler angles the rotation matrix represents

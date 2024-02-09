@@ -26,7 +26,7 @@
 #include <inet/power/contract/IEpEnergySink.h>
 
 #include "estnet/mobility/satellite/common/EulerAngleHelpers.h"
-#include "estnet/antenna/base/AntennaMobility.h"
+#include "estnet/mobility/base/OffsetMobility.h"
 #include "estnet/power/EnergyModule.h"
 #include "estnet/node/satellite/Satellite.h"
 
@@ -54,7 +54,7 @@ protected:
     int _checkIntervall;       ///< recalculation intervall of energy production
     double _efficiency;         ///< solar cell efficiency
     double _systemLosses;       ///< losses of cables, transforming,..
-    AntennaMobility *_mobility; ///< z-axis of panel frame is normal vector to panel plane
+    OffsetMobility *_mobility; ///< z-axis of panel frame is normal vector to panel plane
     EnergyModule *_energyModule; ///< ptr to energy module
 
     W _currentPower;            ///< power produced at the moment

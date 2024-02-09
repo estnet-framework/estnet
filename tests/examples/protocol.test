@@ -1,0 +1,11 @@
+%description:
+Test protocol example
+
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/protocol/omnetpp.ini
+
+%contains: results/General-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].networkHost.appWrapper[0].app sentPk:count 30
+%contains: results/General-#0.sca
+scalar SpaceTerrestrialNetwork.cg[0].networkHost.appWrapper[0].app rcvdPk:count 30

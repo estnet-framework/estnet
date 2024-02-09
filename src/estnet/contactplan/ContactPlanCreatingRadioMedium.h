@@ -83,6 +83,9 @@ private:
     bool _assumeBidirectionalSatContacts;
     bool _considerAddedInterferences;
     bool _buildInterferencePlan;
+    bool _checkISL;
+    bool _checkDownlinks;
+    bool _checkUplinks;
 
     const int _packetLength = 800;
     KDTreeAdapter *_kdTreeAdapter;  // kd tree that is storing nodes
@@ -111,7 +114,7 @@ private:
      * communication range and passes the bitrate and range out */
     bool isWorkingContact(const inetp::Radio *transmitter,
             const inetp::Radio *receiver, int64_t &bitrate,
-            int64_t &range) const;
+            int64_t &range);
 
     /* initializes the map saving contacts during the simulation */
     template<typename T>
@@ -163,7 +166,7 @@ private:
     const inetp::IReceptionDecision* doFakeTransmission(
             const inetp::Radio *transmitter, const inetp::Radio *receiver,
             const std::vector<inetp::Radio*> &interferences,
-            int64_t packetBitLength) const;
+            int64_t packetBitLength) ;
     /* frees a reception decision */
     void freeFakeReceptionDecision(
             const inetp::IReceptionDecision *receptionDecision) const;
@@ -198,6 +201,14 @@ protected:
     virtual void handleMessage(omnetpp::cMessage *message) override;
 
 public:
+    const IArrival* getArrival(const IRadio *receiver,
+            const ITransmission *transmission) const override;
+
+    const IReception *getReception(const IRadio *receiver,
+            const ITransmission *transmission) const override;
+
+    const IListening *getListening(const IRadio *receiver,
+            const ITransmission *transmission) const override;
 
     virtual void addRadio(const inetp::IRadio *iRadio) override;
 

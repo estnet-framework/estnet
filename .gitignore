@@ -30,6 +30,7 @@ precompiled_*.h.*
 /tutorials/*/cache/
 /tutorials/*/data/
 /tutorials/wireless/html/
+/tests/work/
 /tests/*/work/
 /tests/*/*/work/
 /tests/*/results*/
@@ -71,7 +72,7 @@ out/
 .cmdenv-log
 netanim-trace.txt
 *.out
-#contact plan tools for linux users
+# contact plan tools, only applies to unix os
 contactplan/ContactGraphEval
 contactplan/ContactPlanPostProcessor
 contactplan/IndependentSetsCreator
@@ -87,3 +88,8 @@ backups
 xxx
 /tmp/
 *.tmp*
+
+# workspace config files
+.vscode/
+*.code-workspace
+

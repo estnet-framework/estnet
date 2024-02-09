@@ -20,7 +20,7 @@ package estnet.node.tracking.contactplanbased;
 import estnet.node.tracking.contract.INodeTracking;
 
 //
-// Tracking algorithm stat is based on the contact in the contact plan
+// Tracking algorithm that is based on the contact in the contact plan
 //
 simple ContactPlanBasedNodeTracking like INodeTracking
 {

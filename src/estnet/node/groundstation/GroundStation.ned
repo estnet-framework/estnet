@@ -33,7 +33,6 @@ module GroundStation extends NodeBase
         string hostType = default("estnet.protocol.simpleprotocol.SimpleProtocolNode"); // protocol module
         string trackingType = default("estnet.node.tracking.contactplanbased.ContactPlanBasedNodeTracking"); // tracking mocule
         string label = default(""); // label displayed in the view
-        bool fillUpApps = default(true); // parameter to decide whether to automatically create pseudo receicing only basic apps for maximum app number of all satellites
 
         bool internetConnection = default(true); // whether it can talk to any other internet connected ground station
         @display("i=device/receiverdish;bgb=200,400;t=$label");

@@ -34,6 +34,6 @@ simple AttitudePropagatorQuaternion like IAttitudePropagator
         // in SimTime seconds, e.g. the time duration for which the system states are assumed constant
         
         
-        double dSAccMin = default(0.001);
+        double dSAccMin @unit(rad) = default(0.001rad);
 		// Minimal accuracy for each component of the state vector above which a new propagation is triggered
 }

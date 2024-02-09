@@ -30,7 +30,7 @@ simple ExponentialSwipeTracking like ISwipeTracking
     int stopNodeId;                 // last satellite id in formation
     bool enable = default(true);    // enable tracking by default
 
-    int exponent = default(2);      // exponent used in tracking function
+    double exponent = default(2);      // exponent used in tracking function
                                     // ( the higher, the longer outer satellites are tracked)
 
 

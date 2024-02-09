@@ -1,0 +1,7 @@
+%description: 
+Test visualization example against any runtime errors
+
+%extraargs: -c CoordinateFrames
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/visualization/omnetpp.ini

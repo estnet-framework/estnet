@@ -1,0 +1,14 @@
+%description:
+Test errormodel NodeFailure example
+
+%extraargs: -c NodeFailure
+%inifile: omnetpp.ini
+outputscalarmanager-class="omnetpp::envir::OmnetppOutputScalarManager"
+include ../../../../examples/errormodel/omnetpp.ini
+
+%contains: results/NodeFailure-#0.sca
+scalar SpaceTerrestrialNetwork.cg[0].networkHost.appHost sentPk:count 30
+%contains: results/NodeFailure-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].networkHost.appWrapper[0].app rcvdPk:count 22
+%contains: results/NodeFailure-#0.sca
+scalar SpaceTerrestrialNetwork.sat[0].networkHost.jammedPacketHandler[0] lostPacketCount:last 8

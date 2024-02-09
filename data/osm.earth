@@ -1,0 +1,9 @@
+<map name="OpenStreetMap" type="geocentric" version="2" >
+    <image name="osm_mapnik" driver="xyz" >
+        <url>http://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png</url>
+        <profile>spherical-mercator</profile>
+        <cache type="filesystem">0
+            <path>cache</path>
+        </cache>
+    </image>
+</map>

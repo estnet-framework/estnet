@@ -21,7 +21,6 @@
 #include <inet/physicallayer/common/packetlevel/Arrival.h>
 #include <inet/physicallayer/common/packetlevel/Radio.h>
 
-#include "estnet/antenna/base/AntennaMobility.h"
 #include "estnet/mobility/contract/IExtendedMobility.h"
 
 namespace estnet {

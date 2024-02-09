@@ -21,6 +21,7 @@ package estnet.power.consumer.modules;
 import estnet.power.base.ConsumerModuleBase;
 import estnet.power.contract.IConsumerStateHandler;
 
+
 //
 // Module for consumption of the Attitude Determination System
 // The module's consumption is modeled by two state handlers

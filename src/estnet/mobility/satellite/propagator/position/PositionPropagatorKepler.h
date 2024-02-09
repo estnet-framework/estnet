@@ -34,7 +34,8 @@ class ESTNET_API PositionPropagatorKepler: public omnetpp::cSimpleModule,
 protected:
     double timeStep;      ///< temporal simulation resolution
 private:
-    double GetMeanAnomaly(double time) const; ///< returns the MeanAnomaly in RAD at simulation time t in sek
+    double GetMeanAnomalyFromTrueAnomaly(double v) const; ///< returns the MeanAnomaly in RAD for a given true anomaly
+    double GetMeanAnomaly(double time) const; ///< returns the MeanAnomaly in RAD at simulation time t in secondss
     double GetEccentricAnomaly(double time) const; ///< returns the Eccentric Anomaly in RAD for a time
     double GetTrueAnomaly(double time) const; ///< returns the True Anomaly in rad for a given time
     double GetRadiusFromEccentricAnomaly(double EA) const; ///< returns the radius
@@ -52,12 +53,13 @@ private:
     NormalizeAngle(double x); ///< x in rad, normalization between -pi/pi
     cEci GetState(double time) const; ///< returns position[m] and velocity [m/s] at given time
 
-    double a;    ///< semi-major axis
-    double e;    ///< eccentricity
-    double i;    ///< inclination
-    double raan; ///< (big omega) right ascension of the ascending node
-    double aop;  ///< (small omega) argument of periapsis
-    double v;    ///< initial tue anomaly
+    double a;     ///< semi-major axis
+    double e;     ///< eccentricity
+    double i;     ///< inclination
+    double raan;  ///< (big omega) right ascension of the ascending node
+    double aop;   ///< (small omega) argument of periapsis
+    double v;     ///< initial true anomaly
+    double M_ini; ///< initial mean anomaly
 
 protected:
     /**
